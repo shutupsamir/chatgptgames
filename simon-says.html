@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Simon Says</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',sans-serif;color:#fff;gap:1rem}h2{font-size:1.8rem}#level{font-size:.9rem;color:#666}#pad{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:280px;height:280px}
+.btn{border-radius:16px;cursor:pointer;transition:opacity .1s;border:none;outline:none}
+.btn.dim{opacity:.25}.btn.lit{opacity:1}
+#msg{font-size:1rem;color:#10a37f;min-height:1.4em;text-align:center}button.start{padding:.5rem 1.5rem;border-radius:999px;border:none;background:#10a37f;color:#fff;font-size:.9rem;cursor:pointer;font-weight:600}a.back{color:#444;font-size:.75rem;text-decoration:none}a.back:hover{color:#fff}</style>
+</head><body>
+<h2>🎮 Simon Says</h2>
+<div id="level">Level: <b id="lvl">0</b></div>
+<div id="pad">
+  <button class="btn dim" id="b0" style="background:#ef4444"></button>
+  <button class="btn dim" id="b1" style="background:#3b82f6"></button>
+  <button class="btn dim" id="b2" style="background:#22c55e"></button>
+  <button class="btn dim" id="b3" style="background:#facc15"></button>
+</div>
+<div id="msg">Press Start to play</div>
+<button class="start" onclick="startGame()">Start</button>
+<a class="back" href="index.html">← Back</a>
+<script>
+const btns=[0,1,2,3].map(i=>document.getElementById('b'+i));
+let seq=[],player=[],playing=false;
+function flash(i,ms=400){return new Promise(r=>{btns[i].classList.remove('dim');btns[i].classList.add('lit');setTimeout(()=>{btns[i].classList.remove('lit');btns[i].classList.add('dim');setTimeout(r,100);},ms);});}
+async function playSeq(){
+  playing=false;
+  for(const i of seq){await flash(i);await new Promise(r=>setTimeout(r,150));}
+  player=[];playing=true;document.getElementById('msg').textContent='Your turn!';
+}
+async function startGame(){seq=[];player=[];await addStep();}
+async function addStep(){
+  seq.push(Math.floor(Math.random()*4));document.getElementById('lvl').textContent=seq.length;
+  document.getElementById('msg').textContent='Watch...';await new Promise(r=>setTimeout(r,600));await playSeq();
+}
+btns.forEach((b,i)=>{b.addEventListener('click',async()=>{
+  if(!playing)return;flash(i,200);player.push(i);
+  const idx=player.length-1;
+  if(player[idx]!==seq[idx]){playing=false;document.getElementById('msg').textContent=`Wrong! You reached level ${seq.length}. Restart?`;return;}
+  if(player.length===seq.length){playing=false;document.getElementById('msg').textContent='Correct! ✅ Next round...';await new Promise(r=>setTimeout(r,800));await addStep();}
+});});
+</script></body></html>

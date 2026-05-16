@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Card Flip</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',sans-serif;color:#fff;padding:1rem}h2{font-size:1.6rem;margin-bottom:6px}#hud{font-size:.85rem;color:#666;margin-bottom:16px}#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:360px}
+.card{width:76px;height:76px;border-radius:12px;cursor:pointer;background:#16213e;border:2px solid #1f2f5a;display:flex;align-items:center;justify-content:center;font-size:2rem;transition:transform .15s;user-select:none}
+.card.flip{background:#1e3a5f;border-color:#10a37f}.card.matched{background:#0d2d1a;border-color:#10a37f;cursor:default}
+#msg{margin-top:16px;font-size:1.1rem;color:#10a37f;min-height:1.4em}button{margin-top:10px;padding:.4rem 1.4rem;border-radius:999px;border:none;background:#10a37f;color:#fff;font-size:.85rem;cursor:pointer;font-weight:600}a.back{margin-top:10px;color:#444;font-size:.75rem;text-decoration:none}a.back:hover{color:#fff}</style>
+</head><body>
+<h2>🃏 Card Flip</h2>
+<div id="hud">Moves: <b id="moves">0</b> &nbsp;|&nbsp; Pairs: <b id="pairs">0</b>/8</div>
+<div id="grid"></div>
+<div id="msg">Find all matching pairs!</div>
+<button onclick="init()">Restart</button>
+<a class="back" href="index.html">← Back</a>
+<script>
+const emojis=['🐶','🐱','🦊','🐼','🦁','🐸','🦋','🌈'];
+let cards=[],flipped=[],matched=0,moves=0,lock=false;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function init(){
+  cards=shuffle([...emojis,...emojis]);flipped=[];matched=0;moves=0;lock=false;
+  document.getElementById('moves').textContent=0;document.getElementById('pairs').textContent=0;
+  document.getElementById('msg').textContent='Find all matching pairs!';
+  const g=document.getElementById('grid');g.innerHTML='';
+  cards.forEach((e,i)=>{
+    const d=document.createElement('div');d.className='card';d.dataset.i=i;d.dataset.e=e;
+    d.addEventListener('click',()=>flip(d));g.appendChild(d);
+  });
+}
+function flip(d){
+  if(lock||d.classList.contains('flip')||d.classList.contains('matched'))return;
+  d.textContent=d.dataset.e;d.classList.add('flip');flipped.push(d);
+  if(flipped.length===2){
+    lock=true;moves++;document.getElementById('moves').textContent=moves;
+    if(flipped[0].dataset.e===flipped[1].dataset.e){
+      flipped.forEach(c=>c.classList.add('matched'));matched++;
+      document.getElementById('pairs').textContent=matched;flipped=[];lock=false;
+      if(matched===8)document.getElementById('msg').textContent=`You win! 🎉 ${moves} moves`;
+    }else{setTimeout(()=>{flipped.forEach(c=>{c.textContent='';c.classList.remove('flip');});flipped=[];lock=false;},800);}
+  }
+}
+init();
+</script></body></html>

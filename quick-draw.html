@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Quick Draw</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:'Segoe UI',sans-serif;color:#fff;gap:1rem}h2{font-size:1.8rem}#arena{width:340px;height:340px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;background:#16213e;border:2px solid #1f2f5a}#result{font-size:1.1rem;min-height:1.4em;color:#10a37f}#scores{font-size:.9rem;color:#555}a.back{color:#444;font-size:.75rem;text-decoration:none}a.back:hover{color:#fff}</style>
+</head><body>
+<h2>⚡ Quick Draw</h2>
+<div id="scores">Round <span id="rnd">1</span> / 5 &nbsp;|&nbsp; Hits: <span id="hits">0</span></div>
+<div id="arena">Click to start</div>
+<div id="result"></div>
+<a class="back" href="index.html">← Back</a>
+<script>
+const arena=document.getElementById('arena'),res=document.getElementById('result'),rndEl=document.getElementById('rnd'),hitsEl=document.getElementById('hits');
+let state='idle',t0,round=0,hits=0,timeout;
+function next(){
+  round++;rndEl.textContent=round;
+  arena.style.background='#16213e';arena.style.borderColor='#1f2f5a';
+  arena.textContent='Wait for green...';state='waiting';
+  const delay=1000+Math.random()*3000;
+  timeout=setTimeout(()=>{arena.style.background='#10a37f';arena.style.borderColor='#10a37f';arena.textContent='CLICK NOW!';t0=Date.now();state='go';},delay);
+}
+arena.addEventListener('click',()=>{
+  if(state==='idle'){next();return;}
+  if(state==='waiting'){clearTimeout(timeout);arena.style.background='#ef4444';arena.textContent='Too early!';res.textContent='Too soon — wait for green!';state='idle';setTimeout(()=>{if(round<5)next();else finish();},1200);return;}
+  if(state==='go'){
+    const ms=Date.now()-t0;hits++;hitsEl.textContent=hits;
+    res.textContent=`${ms}ms — ${ms<200?'Lightning fast! ⚡':ms<350?'Great! 🎯':ms<500?'Good':'Slow...'}`;
+    arena.style.background='#1e3a5f';arena.textContent=ms+'ms';state='idle';
+    setTimeout(()=>{if(round<5)next();else finish();},1000);
+  }
+});
+function finish(){arena.textContent='Done!';res.textContent=`${hits}/5 hits. ${hits===5?'Perfect! 🏆':hits>=3?'Nice reflexes!':'Keep practicing!'}`;}
+</script></body></html>

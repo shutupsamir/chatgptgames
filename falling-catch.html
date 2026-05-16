@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Falling Catch</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:'Segoe UI',sans-serif;color:#fff}h2{margin-bottom:8px;font-size:1.5rem}#hud{display:flex;gap:2rem;margin-bottom:8px;font-size:.9rem;color:#aaa}canvas{border:1px solid #1f2f5a;border-radius:8px;display:block;cursor:none}#msg{margin-top:12px;font-size:1.1rem;min-height:1.4em;color:#10a37f}a.back{margin-top:10px;color:#444;font-size:.75rem;text-decoration:none}a.back:hover{color:#fff}</style>
+</head><body>
+<h2>🧺 Falling Catch</h2>
+<div id="hud"><span>Score: <b id="sc">0</b></span><span>Lives: <b id="lv">3</b></span><span>Level: <b id="lv2">1</b></span></div>
+<canvas id="c" width="480" height="400"></canvas>
+<div id="msg">Move mouse to catch!</div>
+<a class="back" href="index.html">← Back</a>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+let score=0,lives=3,level=1,items=[],mx=240,over=false;
+c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();mx=e.clientX-r.left;});
+c.addEventListener('touchmove',e=>{e.preventDefault();const r=c.getBoundingClientRect();mx=e.touches[0].clientX-r.left;},{passive:false});
+function spawn(){const emojis=['🍎','⭐','💎','🎯','🍕','🎮'];items.push({x:Math.random()*440+20,y:-20,s:1.5+level*0.3,e:emojis[Math.floor(Math.random()*emojis.length)],bad:Math.random()<0.2});}
+let tick=0;
+function update(){
+  if(over)return;
+  tick++;
+  if(tick%(Math.max(20,50-level*5))===0)spawn();
+  items=items.filter(i=>{
+    i.y+=i.s;
+    if(i.y>380){if(!i.bad){lives--;document.getElementById('lv').textContent=lives;if(lives<=0){over=true;document.getElementById('msg').textContent='Game over! Score: '+score;}}return false;}
+    if(i.y>340&&i.y<390&&Math.abs(i.x-mx)<50){
+      if(!i.bad){score+=10;document.getElementById('sc').textContent=score;level=Math.floor(score/100)+1;document.getElementById('lv2').textContent=level;}
+      else{lives--;document.getElementById('lv').textContent=lives;if(lives<=0){over=true;document.getElementById('msg').textContent='Game over! Score: '+score;}}
+      return false;
+    }
+    return true;
+  });
+}
+function draw(){
+  ctx.fillStyle='#0d0d1a';ctx.fillRect(0,0,480,400);
+  ctx.fillStyle='#10a37f';ctx.beginPath();ctx.ellipse(mx,370,50,15,0,0,Math.PI*2);ctx.fill();
+  items.forEach(i=>{ctx.font='24px serif';ctx.fillText(i.e,i.x-12,i.y);});
+}
+function loop(){update();draw();requestAnimationFrame(loop);}
+loop();
+</script></body></html>

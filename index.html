@@ -1,85 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChatGPT Games</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { min-height:100vh; background:#0d0d1a; display:flex; flex-direction:column; align-items:center; font-family:'Segoe UI',system-ui,sans-serif; color:#fff; padding:2.5rem 1.5rem; }
-    .logo { font-size:3rem; margin-bottom:0.6rem; }
-    h1 { font-size:2.6rem; font-weight:800; background:linear-gradient(135deg,#10a37f,#74aa9c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.3rem; }
-    .sub { color:#555; font-size:0.95rem; margin-bottom:2.5rem; }
-    h2.section { font-size:0.85rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#555; margin-bottom:1rem; align-self:flex-start; max-width:860px; width:100%; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1.1rem; width:100%; max-width:860px; margin-bottom:2.5rem; }
-    a.card { background:#16213e; border:1px solid #1f2f5a; border-radius:18px; padding:1.75rem 1.25rem 1.5rem; text-decoration:none; color:#fff; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; align-items:center; gap:0.65rem; text-align:center; position:relative; }
-    a.card:hover { transform:translateY(-5px); border-color:#10a37f; box-shadow:0 10px 35px rgba(16,163,127,0.2); }
-    .icon { font-size:3.2rem; }
-    .card-title { font-size:1.05rem; font-weight:700; }
-    .card-desc { font-size:0.8rem; color:#666; line-height:1.4; }
-    .play-btn { margin-top:0.4rem; padding:0.35rem 1.1rem; border-radius:999px; background:#10a37f; color:#fff; font-size:0.78rem; font-weight:600; }
-    .badge { position:absolute; top:12px; right:12px; background:#a855f7; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; letter-spacing:0.05em; }
-    footer { margin-top:1rem; color:#333; font-size:0.75rem; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ChatGPT Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#0a0a0f;font-family:'Segoe UI',system-ui,sans-serif;color:#fff;padding:2rem 1.5rem 3rem}
+header{text-align:center;margin-bottom:2.5rem}
+.logo{font-size:2.8rem;margin-bottom:.4rem}
+h1{font-size:3rem;font-weight:900;background:linear-gradient(135deg,#a855f7,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
+.sub{color:#555;font-size:.95rem;margin-top:.4rem}
+.cats{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-bottom:.75rem}
+.cat-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#444;text-align:center;margin-bottom:.5rem}
+.pill{padding:.4rem 1rem;border-radius:999px;border:1.5px solid #2a2a4a;background:transparent;color:#888;font-size:.85rem;cursor:pointer;transition:all .15s;font-weight:600}
+.pill:hover{border-color:#a855f7;color:#fff}
+.pill.active{background:#a855f7;border-color:#a855f7;color:#fff}
+.section-title{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#444;margin:1.8rem 0 .9rem;max-width:940px;margin-left:auto;margin-right:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;max-width:940px;margin:0 auto}
+.card{background:#111120;border:1.5px solid #1a1a2e;border-radius:16px;padding:1.4rem 1.2rem 1.2rem;text-decoration:none;color:#fff;transition:transform .18s,border-color .18s,box-shadow .18s;display:flex;flex-direction:column;gap:.5rem;position:relative}
+.card:hover{transform:translateY(-4px);border-color:#a855f7;box-shadow:0 8px 28px rgba(168,85,247,.18)}
+.card-icon{font-size:2.2rem}
+.card-title{font-size:.95rem;font-weight:700}
+.card-desc{font-size:.76rem;color:#555;line-height:1.4}
+.badge{position:absolute;top:10px;right:10px;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.05em}
+.badge-2p{background:#7c3aed;color:#fff}
+.badge-action{background:#dc2626;color:#fff}
+.badge-puzzle{background:#2563eb;color:#fff}
+.badge-memory{background:#d97706;color:#fff}
+.badge-reaction{background:#059669;color:#fff}
+.badge-word{background:#0891b2;color:#fff}
+.card.hidden{display:none}
+footer{text-align:center;margin-top:3rem;color:#2a2a4a;font-size:.75rem}
+</style>
 </head>
 <body>
+<header>
   <div class="logo">🤖</div>
-  <h1>ChatGPT Games</h1>
-  <p class="sub">Pick a game and play</p>
+  <h1>ChatGPTGames</h1>
+  <p class="sub">Instant mini-games, zero downloads ⚡</p>
+</header>
 
-  <h2 class="section">Single Player</h2>
-  <div class="grid">
-    <a class="card" href="whack-a-mole.html">
-      <div class="icon">🔨</div>
-      <div class="card-title">Whack-a-Mole</div>
-      <div class="card-desc">Smash moles before they disappear</div>
-      <span class="play-btn">Play</span>
-    </a>
-    <a class="card" href="goodapples-3d-maze.html">
-      <div class="icon">🍎</div>
-      <div class="card-title">Good Apples Maze</div>
-      <div class="card-desc">Navigate the 3D maze to collect apples</div>
-      <span class="play-btn">Play</span>
-    </a>
-    <a class="card" href="goodapples-3d.html">
-      <div class="icon">🎮</div>
-      <div class="card-title">Good Apples 3D</div>
-      <div class="card-desc">Full 3D apple adventure</div>
-      <span class="play-btn">Play</span>
-    </a>
-    <a class="card" href="goodapples-remix.html">
-      <div class="icon">🔀</div>
-      <div class="card-title">Good Apples Remix</div>
-      <div class="card-desc">A remixed twist on the classic</div>
-      <span class="play-btn">Play</span>
-    </a>
+<div style="max-width:940px;margin:0 auto">
+  <div class="cat-label">Pick a category</div>
+  <div class="cats">
+    <button class="pill active" onclick="filter('all')">🎲 All</button>
+    <button class="pill" onclick="filter('action')">⚡ Action</button>
+    <button class="pill" onclick="filter('puzzle')">🧩 Puzzle</button>
+    <button class="pill" onclick="filter('memory')">🧠 Memory</button>
+    <button class="pill" onclick="filter('reaction')">🎯 Reaction</button>
+    <button class="pill" onclick="filter('2player')">👥 2 Player</button>
   </div>
+</div>
 
-  <h2 class="section">2 Players</h2>
-  <div class="grid">
-    <a class="card" href="pong.html">
-      <span class="badge">2 PLAYER</span>
-      <div class="icon">🏓</div>
-      <div class="card-title">Pong</div>
-      <div class="card-desc">P1: W/S keys &nbsp;·&nbsp; P2: ↑/↓ arrows</div>
-      <span class="play-btn">Play</span>
-    </a>
-    <a class="card" href="connect-four.html">
-      <span class="badge">2 PLAYER</span>
-      <div class="icon">🔴</div>
-      <div class="card-title">Connect Four</div>
-      <div class="card-desc">Drop pieces, connect 4 in a row to win</div>
-      <span class="play-btn">Play</span>
-    </a>
-    <a class="card" href="tictactoe.html">
-      <span class="badge">2 PLAYER</span>
-      <div class="icon">❌</div>
-      <div class="card-title">Tic Tac Toe</div>
-      <div class="card-desc">Classic X vs O — take turns on one screen</div>
-      <span class="play-btn">Play</span>
-    </a>
-  </div>
+<div class="section-title" id="sec1">Single Player</div>
+<div class="grid" id="grid1">
+  <a class="card" href="whack-a-mole.html" data-cat="action">
+    <span class="badge badge-action">ACTION</span>
+    <div class="card-icon">🐭</div>
+    <div class="card-title">Whack-a-Mole</div>
+    <div class="card-desc">Tap moles before they hide!</div>
+  </a>
+  <a class="card" href="falling-catch.html" data-cat="action">
+    <span class="badge badge-action">ACTION</span>
+    <div class="card-icon">🧺</div>
+    <div class="card-title">Falling Catch</div>
+    <div class="card-desc">Move basket, catch falling objects</div>
+  </a>
+  <a class="card" href="quick-draw.html" data-cat="reaction">
+    <span class="badge badge-reaction">REACTION</span>
+    <div class="card-icon">⚡</div>
+    <div class="card-title">Quick Draw</div>
+    <div class="card-desc">Click when green. Best of 5.</div>
+  </a>
+  <a class="card" href="color-match.html" data-cat="reaction">
+    <span class="badge badge-reaction">REACTION</span>
+    <div class="card-icon">🎨</div>
+    <div class="card-title">Color Match</div>
+    <div class="card-desc">Click the COLOR, not the word</div>
+  </a>
+  <a class="card" href="card-flip.html" data-cat="memory">
+    <span class="badge badge-memory">MEMORY</span>
+    <div class="card-icon">🃏</div>
+    <div class="card-title">Card Flip</div>
+    <div class="card-desc">Find all matching pairs</div>
+  </a>
+  <a class="card" href="simon-says.html" data-cat="memory">
+    <span class="badge badge-memory">MEMORY</span>
+    <div class="card-icon">🔴</div>
+    <div class="card-title">Simon Says</div>
+    <div class="card-desc">Repeat the color sequence</div>
+  </a>
+  <a class="card" href="number-flash.html" data-cat="memory">
+    <span class="badge badge-memory">MEMORY</span>
+    <div class="card-icon">🔢</div>
+    <div class="card-title">Number Flash</div>
+    <div class="card-desc">See it, type it from memory</div>
+  </a>
+</div>
 
-  <footer>Made with ChatGPT</footer>
+<div class="section-title" id="sec2">2 Players</div>
+<div class="grid" id="grid2">
+  <a class="card" href="pong.html" data-cat="2player">
+    <span class="badge badge-2p">2 PLAYER</span>
+    <div class="card-icon">🏓</div>
+    <div class="card-title">Pong</div>
+    <div class="card-desc">W/S vs ↑/↓ — classic paddle battle</div>
+  </a>
+  <a class="card" href="connect-four.html" data-cat="2player">
+    <span class="badge badge-2p">2 PLAYER</span>
+    <div class="card-icon">🟡</div>
+    <div class="card-title">Connect Four</div>
+    <div class="card-desc">Drop pieces, connect 4 to win</div>
+  </a>
+  <a class="card" href="tictactoe.html" data-cat="2player">
+    <span class="badge badge-2p">2 PLAYER</span>
+    <div class="card-icon">❌</div>
+    <div class="card-title">Tic Tac Toe</div>
+    <div class="card-desc">Classic X vs O on one screen</div>
+  </a>
+</div>
+
+<footer>Made with ChatGPT</footer>
+
+<script>
+function filter(cat){
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  const all=document.querySelectorAll('.card');
+  all.forEach(c=>{c.classList.toggle('hidden',cat!=='all'&&c.dataset.cat!==cat);});
+  const s1=document.getElementById('sec1'),s2=document.getElementById('sec2');
+  if(cat==='2player'){s1.style.display='none';document.getElementById('grid1').style.display='none';}
+  else{s1.style.display='';document.getElementById('grid1').style.display='';}
+  if(cat==='all'||cat==='2player'){s2.style.display='';document.getElementById('grid2').style.display='';}
+  else{s2.style.display='none';document.getElementById('grid2').style.display='none';}
+}
+</script>
 </body>
 </html>
