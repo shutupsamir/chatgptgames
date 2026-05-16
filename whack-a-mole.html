@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ChatGPTGames — Instant Mini-Games</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --orange: #f97316;
+    --pink: #ec4899;
+    --neon-purple: #a855f7;
+    --neon-cyan: #22d3ee;
+    --neon-green: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── MENU ── */
+  #menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+    gap: 32px;
+    min-height: 100vh;
+  }
+  .logo { text-align: center; }
+  .logo h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+  .logo p { color: var(--muted); font-size: 1rem; margin-top: 6px; }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    align-self: flex-start;
+    max-width: 640px;
+    width: 100%;
+  }
+  .categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 640px;
+    width: 100%;
+  }
+  .cat-pill {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 20px rgba(124,58,237,.4); }
+  .cat-pill[data-cat="Action"].active { background: var(--red); border-color: var(--red); box-shadow: 0 0 20px rgba(239,68,68,.4); }
+  .cat-pill[data-cat="Puzzle"].active { background: var(--neon-cyan); border-color: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(34,211,238,.4); }
+  .cat-pill[data-cat="Memory"].active { background: var(--neon-purple); border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(168,85,247,.4); }
+  .cat-pill[data-cat="Word"].active { background: var(--green); border-color: var(--green); color: #000; box-shadow: 0 0 20px rgba(74,222,128,.4); }
+  .cat-pill[data-cat="Reaction"].active { background: var(--yellow); border-color: var(--yellow); color: #000; box-shadow: 0 0 20px rgba(234,179,8,.4); }
+  .cat-pill[data-cat="Chill"].active { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 20px rgba(236,72,153,.4); }
+  .cat-pill[data-cat="Random"].active { background: linear-gradient(135deg,var(--neon-purple),var(--neon-cyan)); border-color: transparent; box-shadow: 0 0 20px rgba(124,58,237,.4); }
+  .game-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    max-width: 640px;
+    width: 100%;
+  }
+  .game-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .game-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,.2); }
+  .game-card.selected { border-color: var(--neon-cyan); box-shadow: 0 0 16px rgba(34,211,238,.3); }
+  .game-card .emoji { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+  .game-card .game-name { font-weight: 700; font-size: 0.9rem; }
+  .game-card .game-desc { color: var(--muted); font-size: 0.75rem; margin-top: 4px; line-height: 1.4; }
+  .gen-btn {
+    background: linear-gradient(135deg, var(--accent), var(--neon-cyan));
+    color: #fff;
+    border: none;
+    padding: 18px 48px;
+    border-radius: 100px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 32px rgba(124,58,237,.4);
+    letter-spacing: 0.02em;
+  }
+  .gen-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 40px rgba(124,58,237,.6); }
+  .gen-btn:active { transform: scale(0.98); }
+  .sound-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 100;
+  }
+  .sound-toggle:hover { border-color: var(--accent); }
+
+  /* ── GAME SCREEN ── */
+  #game-screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--bg);
+  }
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent); }
+  .game-title-bar { font-weight: 800; font-size: 1rem; }
+  .score-bar { display: flex; gap: 16px; align-items: center; }
+  .score-item { text-align: center; }
+  .score-item .val { font-size: 1.2rem; font-weight: 800; color: var(--neon-cyan); }
+  .score-item .lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  #game-container {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── GAME OVER ── */
+  #game-over {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .go-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+  }
+  .go-card h2 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+  .go-card .final-score {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 16px 0;
+  }
+  .go-card .hs-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+  .go-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .go-btn {
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  .go-btn.primary { background: var(--accent); color: #fff; }
+  .go-btn.primary:hover { background: var(--neon-purple); }
+  .go-btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .go-btn.secondary:hover { border-color: var(--accent); }
+  .go-btn.download { background: linear-gradient(135deg, var(--green), var(--accent2)); color: #000; font-weight: 800; }
+  .go-btn.download:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+  /* ── SHARED GAME STYLES ── */
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 500px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--neon-cyan));
+    border-radius: 3px;
+    transition: width 0.1s linear;
+  }
+  .game-instructions {
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 16px;
+    max-width: 460px;
+    line-height: 1.6;
+  }
+  .start-btn {
+    background: var(--green);
+    color: #000;
+    border: none;
+    padding: 14px 36px;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .start-btn:hover { transform: scale(1.04); filter: brightness(1.1); }
+
+  /* ── WHACK A MOLE ── */
+  .wam-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 400px;
+    width: 100%;
+    margin: 20px 0;
+  }
+  .wam-hole {
+    aspect-ratio: 1;
+    background: var(--surface2);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.1s;
+  }
+  .wam-hole.active { border-color: var(--neon-green); }
+  .wam-mole {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    transform: translateY(100%);
+    transition: transform 0.15s;
+  }
+  .wam-hole.active .wam-mole { transform: translateY(0); }
+  .wam-hole.hit .wam-mole { filter: grayscale(1) opacity(0.3); }
+
+  /* ── FALLING CATCH ── */
+  #catch-arena {
+    width: 100%;
+    max-width: 400px;
+    height: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin: 10px 0;
+    touch-action: none;
+  }
+  .falling-obj {
+    position: absolute;
+    font-size: 1.8rem;
+    user-select: none;
+    pointer-events: none;
+  }
+  .catch-basket {
+    position: absolute;
+    bottom: 16px;
+    font-size: 2.2rem;
+    user-select: none;
+    pointer-events: none;
+    transition: left 0.05s;
+  }
+
+  /* ── QUICK DRAW ── */
+  #quickdraw-arena {
+    width: 100%;
+    max-width: 400px;
+    height: 260px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+    background: #1a1a1a;
+    border: 2px solid var(--border);
+    margin: 20px 0;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── SLIDING PUZZLE ── */
+  #sliding-grid { display: grid; gap: 4px; margin: 16px 0; }
+  .slide-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .slide-tile:hover:not(.empty) { border-color: var(--neon-cyan); }
+  .slide-tile.empty { background: var(--bg); border-color: transparent; cursor: default; }
+
+  /* ── STROOP ── */
+  #stroop-word {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 900;
+    margin: 30px 0;
+    transition: all 0.2s;
+  }
+  .stroop-buttons { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 10px; }
+  .stroop-btn {
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    color: #fff;
+    min-width: 110px;
+  }
+  .stroop-btn:hover { transform: scale(1.05); filter: brightness(1.15); }
+  .stroop-feedback { font-size: 1.5rem; font-weight: 900; min-height: 2rem; }
+
+  /* ── PATTERN LOCK ── */
+  #pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+    max-width: 280px;
+    width: 100%;
+  }
+  .pattern-dot {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 3px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: transparent;
+  }
+  .pattern-dot.lit { background: var(--neon-purple); border-color: var(--neon-purple); box-shadow: 0 0 16px rgba(168,85,247,.6); color: #fff; }
+  .pattern-dot.correct { background: var(--green); border-color: var(--green); color: #fff; }
+  .pattern-dot.wrong { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* ── CARD FLIP ── */
+  #cards-grid { display: grid; gap: 8px; margin: 16px 0; max-width: 480px; width: 100%; }
+  .memory-card { aspect-ratio: 1; perspective: 600px; cursor: pointer; user-select: none; }
+  .memory-card-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.35s;
+  }
+  .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
+  .memory-card.matched .memory-card-inner { transform: rotateY(180deg); }
+  .card-front, .card-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+  }
+  .card-back { background: var(--surface2); border: 2px solid var(--border); }
+  .card-back:after { content: "?"; font-size: 1.4rem; color: var(--muted); font-weight: 900; }
+  .card-front { background: var(--surface); border: 2px solid var(--neon-purple); transform: rotateY(180deg); }
+  .memory-card.matched .card-front { border-color: var(--green); background: #0a200f; }
+
+  /* ── SIMON ── */
+  .simon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    width: min(320px, 80vw);
+    height: min(320px, 80vw);
+    margin: 20px 0;
+  }
+  .simon-btn {
+    border-radius: 16px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.1s;
+    opacity: 0.5;
+    user-select: none;
+  }
+  .simon-btn.lit { opacity: 1; filter: brightness(1.6); box-shadow: 0 0 32px currentColor; }
+  .simon-btn[data-color="red"] { background: #dc2626; border-color: #7f1d1d; color: #dc2626; }
+  .simon-btn[data-color="blue"] { background: #2563eb; border-color: #1e3a8a; color: #2563eb; }
+  .simon-btn[data-color="yellow"] { background: #ca8a04; border-color: #713f12; color: #ca8a04; }
+  .simon-btn[data-color="green"] { background: #16a34a; border-color: #14532d; color: #16a34a; }
+
+  /* ── NUMBER FLASH ── */
+  #flash-number {
+    font-size: clamp(3rem, 10vw, 5rem);
+    font-weight: 900;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+    color: var(--neon-cyan);
+    margin: 30px 0;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #flash-input {
+    font-size: 1.6rem;
+    font-family: monospace;
+    letter-spacing: 0.15em;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 14px 20px;
+    border-radius: 12px;
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+    margin: 10px 0;
+    outline: none;
+  }
+  #flash-input:focus { border-color: var(--neon-cyan); }
+
+  /* ── WORD SCRAMBLE ── */
+  #scramble-word {
+    font-size: clamp(2rem, 7vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: var(--neon-purple);
+    margin: 20px 0;
+    font-family: monospace;
+  }
+  #scramble-input {
+    font-size: 1.4rem;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  #scramble-input:focus { border-color: var(--neon-purple); }
+  .scramble-feedback { font-size: 1.3rem; min-height: 2rem; font-weight: 700; }
+
+  /* ── TYPING SPEED ── */
+  #typing-text {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    max-width: 520px;
+    width: 100%;
+    margin: 16px 0;
+    user-select: none;
+  }
+  .typing-char { transition: color 0.1s; }
+  .typing-char.correct { color: var(--neon-green); }
+  .typing-char.wrong { color: var(--red); background: rgba(239,68,68,.15); border-radius: 2px; }
+  .typing-char.cursor { border-left: 2px solid var(--text); }
+  #typing-input {
+    width: 100%;
+    max-width: 520px;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    font-family: monospace;
+  }
+  #typing-input:focus { border-color: var(--neon-cyan); }
+
+  /* ── HANGMAN ── */
+  .hangman-word {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .hangman-letter {
+    width: 36px;
+    height: 44px;
+    border-bottom: 3px solid var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 900;
+  }
+  .hangman-keyboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    max-width: 420px;
+    margin: 12px 0;
+  }
+  .hm-key {
+    width: 38px;
+    height: 38px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .hm-key:hover:not(:disabled) { border-color: var(--neon-cyan); }
+  .hm-key:disabled { opacity: 0.25; cursor: default; }
+  .hm-key.wrong-key { background: rgba(239,68,68,.2); border-color: var(--red); color: var(--red); }
+  .hm-key.correct-key { background: rgba(74,222,128,.2); border-color: var(--green); color: var(--green); }
+
+  /* ── REACTION TIME ── */
+  #reaction-arena {
+    width: 100%;
+    max-width: 400px;
+    height: 280px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 1.4rem;
+    font-weight: 800;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    margin: 20px 0;
+    gap: 10px;
+  }
+  .reaction-sub { font-size: 0.9rem; font-weight: 400; color: rgba(255,255,255,.6); }
+
+  /* ── AIM TRAINER ── */
+  #aim-arena {
+    width: 100%;
+    max-width: 520px;
+    height: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: crosshair;
+    margin: 10px 0;
+    touch-action: none;
+  }
+  .aim-target {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+    animation: popIn 0.15s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .aim-target:hover { filter: brightness(1.3); }
+
+  /* ── SPEED COUNT ── */
+  #speedcount-arena {
+    width: 100%;
+    max-width: 520px;
+    height: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+  .count-num {
+    position: absolute;
+    font-weight: 900;
+    font-size: 1.4rem;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .count-num:hover { filter: brightness(1.4); transform: scale(1.1); }
+  .count-num.done { opacity: 0; pointer-events: none; }
+  .count-num.wrong { animation: shake 0.3s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* ── PLANT PARENT ── */
+  #plant-arena {
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 10px 0;
+  }
+  .plant-display { font-size: 5rem; text-align: center; margin: 16px 0; min-height: 90px; transition: all 0.3s; }
+  .plant-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .plant-stat { text-align: center; background: var(--surface2); border-radius: 10px; padding: 12px 8px; }
+  .plant-stat .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; }
+  .plant-stat .stat-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .plant-stat .stat-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .plant-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+  .plant-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .plant-btn:hover { transform: scale(1.05); }
+  .plant-fact {
+    background: rgba(74,222,128,.08);
+    border: 1px solid rgba(74,222,128,.2);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.82rem;
+    color: var(--neon-green);
+    line-height: 1.5;
+    min-height: 48px;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* ── ZEN GARDEN ── */
+  #zen-arena {
+    width: 100%;
+    max-width: 560px;
+    background: #1a1610;
+    border: 1px solid #3a3020;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    margin: 10px 0;
+    touch-action: none;
+  }
+  #zen-canvas { display: block; width: 100%; cursor: crosshair; }
+  .zen-tools {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .zen-tool {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .zen-tool.active { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+  .zen-tool:hover { border-color: var(--accent); }
+
+  /* ── COLOR MIXER ── */
+  #mixer-arena {
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 10px 0;
+  }
+  .color-swatches { display: flex; gap: 16px; justify-content: center; margin: 20px 0; }
+  .color-swatch { width: 100px; height: 100px; border-radius: 16px; border: 3px solid var(--border); transition: all 0.3s; }
+  .swatch-label { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+  .mixer-sliders { margin: 16px 0; }
+  .mixer-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+  .mixer-row label { width: 20px; font-weight: 800; font-size: 1rem; }
+  .mixer-row input[type=range] { flex: 1; accent-color: var(--neon-cyan); height: 6px; }
+  .mixer-row span { width: 36px; font-family: monospace; font-size: 0.9rem; text-align: right; }
+  .mixer-score-display { text-align: center; font-size: 2rem; font-weight: 900; margin: 10px 0; color: var(--neon-cyan); }
+  .submit-mix-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: block;
+    margin: 10px auto;
+  }
+  .submit-mix-btn:hover { background: var(--neon-purple); transform: scale(1.03); }
+
+  @media (max-width: 480px) {
+    .wam-grid { grid-template-columns: repeat(3, 1fr); }
+    #aim-arena, #speedcount-arena { height: 320px; }
+    .simon-grid { width: min(260px, 80vw); height: min(260px, 80vw); }
+    .go-card { padding: 28px 24px; }
+    .go-card .final-score { font-size: 2.4rem; }
+  }
+</style>
+
+</head>
+<body>
+
+
+<button class="sound-toggle" id="sound-toggle" title="Toggle sound">🔇</button>
+
+<!-- MENU -->
+<div id="menu" style="display: none;">
+  <div class="logo">
+    <h1>ChatGPTGames</h1>
+    <p>Instant mini-games, zero downloads ⚡</p>
+  </div>
+
+  <div class="section-label">Pick a Category</div>
+  <div class="categories">
+    <button class="cat-pill active" data-cat="Random">🎲 Random</button>
+    <button class="cat-pill" data-cat="Action">⚡ Action</button>
+    <button class="cat-pill" data-cat="Puzzle">🧩 Puzzle</button>
+    <button class="cat-pill" data-cat="Memory">🧠 Memory</button>
+    <button class="cat-pill" data-cat="Word">📝 Word</button>
+    <button class="cat-pill" data-cat="Reaction">⚡ Reaction</button>
+    <button class="cat-pill" data-cat="Chill">🌿 Chill</button>
+  </div>
+
+  <div class="section-label">Or Pick a Game</div>
+  <div class="game-list" id="game-list"><div class="game-card selected" data-id="whack"><span class="emoji">🐭</span><div class="game-name">Whack-a-Mole</div><div class="game-desc">Tap moles before they hide!</div></div><div class="game-card" data-id="catch"><span class="emoji">🧺</span><div class="game-name">Falling Catch</div><div class="game-desc">Move basket, catch falling objects.</div></div><div class="game-card" data-id="quickdraw"><span class="emoji">⚡</span><div class="game-name">Quick Draw</div><div class="game-desc">Click when green. Best of 5.</div></div><div class="game-card" data-id="sliding"><span class="emoji">🧩</span><div class="game-name">Sliding Puzzle</div><div class="game-desc">Arrange tiles in order.</div></div><div class="game-card" data-id="stroop"><span class="emoji">🎨</span><div class="game-name">Color Match</div><div class="game-desc">Click the COLOR, not the word.</div></div><div class="game-card" data-id="pattern"><span class="emoji">🔐</span><div class="game-name">Pattern Lock</div><div class="game-desc">Memorize and recreate patterns.</div></div><div class="game-card" data-id="memory"><span class="emoji">🃏</span><div class="game-name">Card Flip</div><div class="game-desc">Find all matching pairs.</div></div><div class="game-card" data-id="simon"><span class="emoji">🔴</span><div class="game-name">Simon Says</div><div class="game-desc">Repeat the color sequence.</div></div><div class="game-card" data-id="numflash"><span class="emoji">🔢</span><div class="game-name">Number Flash</div><div class="game-desc">See it, type it from memory.</div></div><div class="game-card" data-id="scramble"><span class="emoji">🔤</span><div class="game-name">Word Scramble</div><div class="game-desc">Unscramble words in 60 seconds.</div></div><div class="game-card" data-id="typing"><span class="emoji">⌨️</span><div class="game-name">Typing Speed</div><div class="game-desc">Type as fast and accurately as you can.</div></div><div class="game-card" data-id="hangman"><span class="emoji">💀</span><div class="game-name">Hangman</div><div class="game-desc">Guess the word. 6 lives.</div></div><div class="game-card" data-id="reaction"><span class="emoji">⚡</span><div class="game-name">Reaction Time</div><div class="game-desc">Hit when green. Avg of 5.</div></div><div class="game-card" data-id="aim"><span class="emoji">🎯</span><div class="game-name">Aim Trainer</div><div class="game-desc">Click 30 targets as fast as possible.</div></div><div class="game-card" data-id="speedcount"><span class="emoji">🔢</span><div class="game-name">Speed Count</div><div class="game-desc">Click 1-25 in order, fastest wins.</div></div><div class="game-card" data-id="plant"><span class="emoji">🌱</span><div class="game-name">Plant Parent</div><div class="game-desc">Keep your virtual plant alive!</div></div><div class="game-card" data-id="zen"><span class="emoji">🪨</span><div class="game-name">Zen Garden</div><div class="game-desc">Rake sand. Place rocks. Find peace.</div></div><div class="game-card" data-id="mixer"><span class="emoji">🌈</span><div class="game-name">Color Mixer</div><div class="game-desc">Match target colors with RGB sliders.</div></div></div>
+
+  <button class="gen-btn" id="gen-btn">🎮 Generate Game</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" style="display: flex;">
+  <div class="game-header">
+    <button class="back-btn" id="back-btn">← Menu</button>
+    <div class="game-title-bar" id="game-title-bar">🐭 Whack-a-Mole</div>
+    <div class="score-bar">
+      <div class="score-item" id="score-display" style="display: block;">
+        <div class="val" id="score-val">60</div>
+        <div class="lbl">Score</div>
+      </div>
+      <div class="score-item" id="timer-display" style="display: block;">
+        <div class="val" id="timer-val">0</div>
+        <div class="lbl">Secs</div>
+      </div>
+    </div>
+  </div>
+  <div id="game-container">
+    <p class="game-instructions">Tap the moles before they disappear! 30 seconds.</p>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="wam-prog" style="width: 0%; background: var(--red);"></div></div>
+    <div class="wam-grid" id="wam-grid"><div class="wam-hole" data-i="0"><div class="wam-mole">🐿️</div></div><div class="wam-hole" data-i="1"><div class="wam-mole">🐹</div></div><div class="wam-hole" data-i="2"><div class="wam-mole">🐹</div></div><div class="wam-hole" data-i="3"><div class="wam-mole">🐿️</div></div><div class="wam-hole" data-i="4"><div class="wam-mole">🦔</div></div><div class="wam-hole" data-i="5"><div class="wam-mole">🐹</div></div><div class="wam-hole" data-i="6"><div class="wam-mole">🦔</div></div><div class="wam-hole" data-i="7"><div class="wam-mole">🐭</div></div><div class="wam-hole active" data-i="8"><div class="wam-mole">🐹</div></div><div class="wam-hole" data-i="9"><div class="wam-mole">🦔</div></div><div class="wam-hole" data-i="10"><div class="wam-mole">🐹</div></div><div class="wam-hole" data-i="11"><div class="wam-mole">🐿️</div></div></div>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:8px">Missed: <span id="wam-miss">59</span></p>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="game-over" style="display: flex;">
+  <div class="go-card">
+    <h2 id="go-title">🏆 New High Score!</h2>
+    <div class="final-score" id="go-score">60</div>
+    <div class="hs-label" id="go-hs">Best: 60</div>
+    <div class="go-actions">
+      <button class="go-btn primary" id="go-replay">▶ Play Again</button>
+      <button class="go-btn secondary" id="go-new">🎲 New Game</button>
+      <button class="go-btn download" id="go-download">📲 Download This Game</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════════════
+let audioEnabled = false;
+let audioCtx = null;
+
+document.getElementById('sound-toggle').addEventListener('click', () => {
+  audioEnabled = !audioEnabled;
+  document.getElementById('sound-toggle').textContent = audioEnabled ? '🔊' : '🔇';
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+});
+
+function playTone(freq, duration=0.1, type='sine', vol=0.3) {
+  if (!audioEnabled || !audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+function playHit() { playTone(880, 0.08); }
+function playMiss() { playTone(200, 0.15, 'sawtooth'); }
+function playSuccess() {
+  playTone(523, 0.1); setTimeout(()=>playTone(659,0.1),80); setTimeout(()=>playTone(784,0.2),160);
+}
+function playClick() { playTone(440, 0.05, 'square', 0.15); }
+function playBeep() { playTone(660, 0.08); }
+
+// ═══════════════════════════════════════════
+// WORD LISTS
+// ═══════════════════════════════════════════
+const WORDS = [
+  'apple','beach','chair','dance','earth','flame','grace','heart','index','judge',
+  'kneel','lemon','mango','night','ocean','peach','queen','river','storm','tiger',
+  'umbra','viola','witch','xenon','yacht','zebra','blast','crane','drift','frost',
+  'glare','harsh','ivory','joker','karma','lunar','maple','noble','ombre','perch',
+  'quest','robin','shade','thumb','ultra','vapor','wrath','yearn','zippy','abbot',
+  'brisk','chime','drape','ember','flint','globe','hover','igloo','jewel','kinky',
+  'labor','moose','nerve','orbit','pixel','quirk','rainy','scone','taunt','ulcer',
+  'venom','waltz','adorn','blaze','crisp','dodge','evoke','facet','grasp','hinge',
+  'input','joust','knack','lotus','mirth','notch','optic','pivot','quilt','rebel',
+  'scout','thyme','urban','vivid','windy','album','bagel','camel','delta','elite',
+  'fever','gecko','hazel','ideal','jelly','koala','lapse','maize','ozone','plumb',
+  'quota','radar','salsa','trout','valve','woven','argue','bonus','cubic','depth'
+];
+
+const TYPING_SENTENCES = [
+  "The quick brown fox jumps over the lazy dog.",
+  "Pack my box with five dozen liquor jugs.",
+  "How vexingly quick daft zebras jump.",
+  "The five boxing wizards jump quickly.",
+  "Sphinx of black quartz, judge my vow.",
+  "Crazy Fredrick bought many very exquisite opal jewels.",
+  "A mad boxer shot a quick gloved jab to the jaw.",
+  "The job requires extra pluck and zeal from every young wage earner.",
+  "Sixty zippers were quickly picked from the woven jute bag.",
+  "We promptly judged antique ivory buckles for the next prize."
+];
+
+// ═══════════════════════════════════════════
+// GAME REGISTRY
+// ═══════════════════════════════════════════
+const GAMES = [
+  { id:'whack',      name:'Whack-a-Mole',  emoji:'🐭', cat:'Action',   desc:'Tap moles before they hide!' },
+  { id:'catch',      name:'Falling Catch', emoji:'🧺', cat:'Action',   desc:'Move basket, catch falling objects.' },
+  { id:'quickdraw',  name:'Quick Draw',    emoji:'⚡', cat:'Action',   desc:'Click when green. Best of 5.' },
+  { id:'sliding',    name:'Sliding Puzzle',emoji:'🧩', cat:'Puzzle',   desc:'Arrange tiles in order.' },
+  { id:'stroop',     name:'Color Match',   emoji:'🎨', cat:'Puzzle',   desc:'Click the COLOR, not the word.' },
+  { id:'pattern',    name:'Pattern Lock',  emoji:'🔐', cat:'Puzzle',   desc:'Memorize and recreate patterns.' },
+  { id:'memory',     name:'Card Flip',     emoji:'🃏', cat:'Memory',   desc:'Find all matching pairs.' },
+  { id:'simon',      name:'Simon Says',    emoji:'🔴', cat:'Memory',   desc:'Repeat the color sequence.' },
+  { id:'numflash',   name:'Number Flash',  emoji:'🔢', cat:'Memory',   desc:'See it, type it from memory.' },
+  { id:'scramble',   name:'Word Scramble', emoji:'🔤', cat:'Word',     desc:'Unscramble words in 60 seconds.' },
+  { id:'typing',     name:'Typing Speed',  emoji:'⌨️', cat:'Word',     desc:'Type as fast and accurately as you can.' },
+  { id:'hangman',    name:'Hangman',       emoji:'💀', cat:'Word',     desc:'Guess the word. 6 lives.' },
+  { id:'reaction',   name:'Reaction Time', emoji:'⚡', cat:'Reaction', desc:'Hit when green. Avg of 5.' },
+  { id:'aim',        name:'Aim Trainer',   emoji:'🎯', cat:'Reaction', desc:'Click 30 targets as fast as possible.' },
+  { id:'speedcount', name:'Speed Count',   emoji:'🔢', cat:'Reaction', desc:'Click 1-25 in order, fastest wins.' },
+  { id:'plant',      name:'Plant Parent',  emoji:'🌱', cat:'Chill',    desc:'Keep your virtual plant alive!' },
+  { id:'zen',        name:'Zen Garden',    emoji:'🪨', cat:'Chill',    desc:'Rake sand. Place rocks. Find peace.' },
+  { id:'mixer',      name:'Color Mixer',   emoji:'🌈', cat:'Chill',    desc:'Match target colors with RGB sliders.' },
+];
+
+// ═══════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════
+let selectedCat = 'Random';
+let selectedGame = null;
+let currentGameId = null;
+let currentGameCleanup = null;
+let score = 0;
+let timerInterval = null;
+let timerVal = 0;
+let gameActive = false;
+
+// ═══════════════════════════════════════════
+// MENU
+// ═══════════════════════════════════════════
+function buildGameList() {
+  const list = document.getElementById('game-list');
+  list.innerHTML = '';
+  const games = selectedCat === 'Random' ? GAMES : GAMES.filter(g => g.cat === selectedCat);
+  games.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'game-card' + (selectedGame === g.id ? ' selected' : '');
+    card.dataset.id = g.id;
+    card.innerHTML = `<span class="emoji">${g.emoji}</span><div class="game-name">${g.name}</div><div class="game-desc">${g.desc}</div>`;
+    card.addEventListener('click', () => { selectedGame = g.id; playClick(); buildGameList(); });
+    list.appendChild(card);
+  });
+}
+
+document.querySelectorAll('.cat-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    selectedCat = pill.dataset.cat;
+    selectedGame = null;
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    playClick();
+    buildGameList();
+  });
+});
+
+document.getElementById('gen-btn').addEventListener('click', () => {
+  const pool = selectedCat === 'Random' ? GAMES : GAMES.filter(g => g.cat === selectedCat);
+  const game = selectedGame ? GAMES.find(g => g.id === selectedGame) : pool[Math.floor(Math.random() * pool.length)];
+  launchGame(game.id);
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  stopCurrentGame();
+  showMenu();
+});
+
+document.getElementById('go-replay').addEventListener('click', () => {
+  document.getElementById('game-over').style.display = 'none';
+  launchGame(currentGameId);
+});
+
+document.getElementById('go-new').addEventListener('click', () => {
+  document.getElementById('game-over').style.display = 'none';
+  showMenu();
+});
+
+document.getElementById('go-download').addEventListener('click', () => {
+  downloadCurrentGame();
+});
+
+function downloadCurrentGame() {
+  const gameInfo = GAMES.find(g => g.id === currentGameId);
+  if (!gameInfo) return;
+
+  // Get the original page source by re-reading the full document
+  // We reconstruct from the static DOM: grab everything from doctype through </html>
+  const doctype = '<!DOCTYPE html>';
+  const headHTML = document.head.innerHTML;
+  const bodyHTML = document.body.innerHTML;
+
+  // Inject an auto-launch script that starts this specific game on load
+  const autoLaunchScript = `
+<script>
+// AUTO-LAUNCH: This is a standalone download of "${gameInfo.name}"
+(function() {
+  var _origInit = window.onload;
+  function autoStart() {
+    // Small delay to let everything initialize
+    setTimeout(function() {
+      launchGame('${currentGameId}');
+      // Override "New Game" to relaunch this game
+      var newBtn = document.getElementById('go-new');
+      if (newBtn) {
+        newBtn.textContent = '🔄 Play Again';
+        newBtn.onclick = function() {
+          document.getElementById('game-over').style.display = 'none';
+          launchGame('${currentGameId}');
+        };
+      }
+      // Hide the download button in standalone mode
+      var dlBtn = document.getElementById('go-download');
+      if (dlBtn) dlBtn.style.display = 'none';
+    }, 150);
+  }
+  if (document.readyState === 'complete') autoStart();
+  else window.addEventListener('load', autoStart);
+})();
+<\/script>`;
+
+  // Build standalone file: same head, same body, plus auto-launch
+  const standalone = doctype + '\n<html lang="en">\n<head>\n' +
+    headHTML + '\n</head>\n<body>\n' +
+    // Reset body to initial state (menu visible, game hidden)
+    bodyHTML.replace(/style="display:\s*none"/g, 'style=""')
+            .replace(/style="display:\s*flex"/g, 'style=""') +
+    '\n' + autoLaunchScript + '\n</body>\n</html>';
+
+  // Trigger download
+  const blob = new Blob([standalone], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = gameInfo.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+buildGameList();
+
+// ═══════════════════════════════════════════
+// SCREEN HELPERS
+// ═══════════════════════════════════════════
+function showMenu() {
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('game-screen').style.display = 'none';
+  buildGameList();
+}
+
+function showGameScreen(title, hasScore=true, hasTimer=false) {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('game-title-bar').textContent = title;
+  document.getElementById('score-display').style.display = hasScore ? 'block' : 'none';
+  document.getElementById('timer-display').style.display = hasTimer ? 'block' : 'none';
+  setScore(0);
+  setTimer(0);
+}
+
+function setScore(v) { score = v; document.getElementById('score-val').textContent = v; }
+function addScore(v) { setScore(score + v); }
+function setTimer(v) { timerVal = v; document.getElementById('timer-val').textContent = v; }
+
+function startCountdown(secs, onTick, onDone) {
+  setTimer(secs);
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerVal--;
+    setTimer(timerVal);
+    if (onTick) onTick(timerVal);
+    if (timerVal <= 0) { clearInterval(timerInterval); if (onDone) onDone(); }
+  }, 1000);
+}
+
+function stopCurrentGame() {
+  gameActive = false;
+  clearInterval(timerInterval);
+  if (currentGameCleanup) { currentGameCleanup(); currentGameCleanup = null; }
+}
+
+function showGameOver(finalScore, label) {
+  stopCurrentGame();
+  const hs = getHS(currentGameId);
+  const val = typeof finalScore === 'number' ? finalScore : 0;
+  if (val > 0) saveHS(currentGameId, val);
+  const isNew = val > hs && val > 0;
+  document.getElementById('go-title').textContent = isNew ? '🏆 New High Score!' : 'Game Over!';
+  document.getElementById('go-score').textContent = label || val;
+  document.getElementById('go-hs').textContent = 'Best: ' + Math.max(hs, val);
+  document.getElementById('game-over').style.display = 'flex';
+  playSuccess();
+}
+
+function getHS(id) { return parseInt(localStorage.getItem('hs_'+id)||'0'); }
+function saveHS(id, v) { if (v > getHS(id)) localStorage.setItem('hs_'+id, v); }
+
+// ═══════════════════════════════════════════
+// LAUNCH
+// ═══════════════════════════════════════════
+function launchGame(id) {
+  stopCurrentGame();
+  currentGameId = id;
+  const container = document.getElementById('game-container');
+  container.innerHTML = '';
+  gameActive = true;
+  const map = {
+    whack: gameWhackAMole, catch: gameFallingCatch, quickdraw: gameQuickDraw,
+    sliding: gameSlidingPuzzle, stroop: gameStroop, pattern: gamePattern,
+    memory: gameMemory, simon: gameSimon, numflash: gameNumFlash,
+    scramble: gameScramble, typing: gameTyping, hangman: gameHangman,
+    reaction: gameReaction, aim: gameAim, speedcount: gameSpeedCount,
+    plant: gamePlant, zen: gameZen, mixer: gameMixer,
+  };
+  if (map[id]) {
+    const cleanup = map[id](container, showGameOver);
+    if (cleanup && cleanup.destroy) currentGameCleanup = cleanup.destroy;
+  }
+}
+
+// ═══════════════════════════════════════════
+// GAME: WHACK-A-MOLE
+// ═══════════════════════════════════════════
+function gameWhackAMole(container, onEnd) {
+  showGameScreen('🐭 Whack-a-Mole', true, true);
+  const HOLES = 12, DURATION = 30;
+  let active = {}, speed = 900;
+
+  container.innerHTML = `
+    <p class="game-instructions">Tap the moles before they disappear! 30 seconds.</p>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="wam-prog" style="width:100%"></div></div>
+    <div class="wam-grid" id="wam-grid"></div>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:8px">Missed: <span id="wam-miss">0</span></p>
+  `;
+
+  const grid = document.getElementById('wam-grid');
+  let missed = 0;
+
+  for (let i = 0; i < HOLES; i++) {
+    const hole = document.createElement('div');
+    hole.className = 'wam-hole';
+    hole.dataset.i = i;
+    const mole = document.createElement('div');
+    mole.className = 'wam-mole';
+    mole.textContent = ['🐭','🐹','🐿️','🦔'][Math.floor(Math.random()*4)];
+    hole.appendChild(mole);
+    const hit = () => {
+      if (!hole.classList.contains('active')) return;
+      hole.classList.remove('active');
+      hole.classList.add('hit');
+      clearTimeout(active[i]);
+      delete active[i];
+      addScore(10);
+      playHit();
+      setTimeout(() => hole.classList.remove('hit'), 300);
+    };
+    hole.addEventListener('click', hit);
+    hole.addEventListener('touchstart', e => { e.preventDefault(); hit(); }, {passive:false});
+    grid.appendChild(hole);
+  }
+
+  let elapsed = 0;
+  const loopInt = setInterval(() => {
+    if (!gameActive) { clearInterval(loopInt); return; }
+    elapsed++;
+    speed = Math.max(350, 900 - elapsed * 15);
+    const holes = grid.querySelectorAll('.wam-hole:not(.active):not(.hit)');
+    if (!holes.length) return;
+    const hole = holes[Math.floor(Math.random() * holes.length)];
+    const i = parseInt(hole.dataset.i);
+    hole.classList.add('active');
+    active[i] = setTimeout(() => {
+      if (hole.classList.contains('active')) {
+        hole.classList.remove('active');
+        missed++;
+        document.getElementById('wam-miss').textContent = missed;
+      }
+      delete active[i];
+    }, speed);
+    if (elapsed % 3 === 0) {
+      const h2 = grid.querySelectorAll('.wam-hole:not(.active):not(.hit)');
+      if (h2.length > 0) {
+        const hole2 = h2[Math.floor(Math.random() * h2.length)];
+        const i2 = parseInt(hole2.dataset.i);
+        hole2.classList.add('active');
+        active[i2] = setTimeout(() => {
+          if (hole2.classList.contains('active')) { hole2.classList.remove('active'); missed++; }
+          delete active[i2];
+        }, speed);
+      }
+    }
+  }, 600);
+
+  startCountdown(DURATION, t => {
+    document.getElementById('wam-prog').style.width = (t/DURATION*100)+'%';
+    if (t <= 10) document.getElementById('wam-prog').style.background = 'var(--red)';
+  }, () => { clearInterval(loopInt); onEnd(score); });
+
+  return { destroy: () => { clearInterval(loopInt); Object.values(active).forEach(clearTimeout); } };
+}
+
+// ═══════════════════════════════════════════
+// GAME: FALLING CATCH
+// ═══════════════════════════════════════════
+function gameFallingCatch(container, onEnd) {
+  showGameScreen('🧺 Falling Catch', true, false);
+  let misses = 0, basketX = 50, animId, arenaW, arenaH;
+  const objs = [];
+  const ITEMS = ['🍎','🍊','🍋','🍇','🍓','⭐','💎','🎁','🌟','🍕'];
+  const BASKET_W = 60, MAX_MISS = 3;
+  let spawnTimer = 0;
+
+  container.innerHTML = `
+    <p class="game-instructions">Catch falling objects! Miss 3 and it's over.</p>
+    <p style="color:var(--muted);font-size:.8rem;margin-bottom:8px">← → Arrow keys or drag on mobile</p>
+    <div id="catch-arena">
+      <div class="catch-basket" id="catch-basket">🧺</div>
+      <div id="miss-ind" style="position:absolute;bottom:8px;display:flex;gap:8px;left:50%;transform:translateX(-50%)"></div>
+    </div>
+  `;
+
+  function updateMiss() {
+    const ind = document.getElementById('miss-ind');
+    if (!ind) return;
+    ind.innerHTML = '';
+    for (let i = 0; i < MAX_MISS; i++) {
+      const d = document.createElement('div');
+      d.style.cssText = `width:10px;height:10px;border-radius:50%;border:2px solid #ef4444;${i < misses ? 'background:#ef4444' : ''}`;
+      ind.appendChild(d);
+    }
+  }
+  updateMiss();
+
+  const arena = document.getElementById('catch-arena');
+  const basket = document.getElementById('catch-basket');
+
+  function spawnObj() {
+    if (!gameActive) return;
+    const el = document.createElement('div');
+    el.className = 'falling-obj';
+    el._x = 5 + Math.random() * 85;
+    el._y = -40;
+    el._speed = 1.5 + score/300 + Math.random() * 2;
+    el.textContent = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+    el.style.left = el._x + '%';
+    el.style.top = '-40px';
+    arena.appendChild(el);
+    objs.push(el);
+  }
+
+  function loop() {
+    if (!gameActive) return;
+    arenaW = arena.offsetWidth;
+    arenaH = arena.offsetHeight;
+    const bLeft = basketX * arenaW / 100 - BASKET_W / 2;
+    spawnTimer++;
+    if (spawnTimer >= Math.max(18, 50 - score/8)) { spawnTimer = 0; spawnObj(); }
+    for (let i = objs.length - 1; i >= 0; i--) {
+      const o = objs[i];
+      o._y += o._speed;
+      o.style.top = o._y + 'px';
+      const oLeft = o._x * arenaW / 100;
+      const oB = o._y + 28;
+      if (oB >= arenaH - 64 && oB <= arenaH - 16 && Math.abs(oLeft - (bLeft + BASKET_W/2)) < BASKET_W) {
+        arena.removeChild(o); objs.splice(i, 1); addScore(10); playHit();
+      } else if (o._y > arenaH) {
+        arena.removeChild(o); objs.splice(i, 1); misses++; updateMiss(); playMiss();
+        if (misses >= MAX_MISS) { gameActive = false; cancelAnimationFrame(animId); onEnd(score); return; }
+      }
+    }
+    basket.style.left = Math.max(0, Math.min(arenaW - BASKET_W, bLeft)) + 'px';
+    animId = requestAnimationFrame(loop);
+  }
+
+  const onKey = e => {
+    if (e.key === 'ArrowLeft') basketX = Math.max(2, basketX - 4);
+    if (e.key === 'ArrowRight') basketX = Math.min(98, basketX + 4);
+  };
+  document.addEventListener('keydown', onKey);
+
+  let touchStartX = 0, touchBasket0 = 0;
+  arena.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchBasket0 = basketX; }, {passive:true});
+  arena.addEventListener('touchmove', e => {
+    e.preventDefault();
+    basketX = Math.max(2, Math.min(98, touchBasket0 + (e.touches[0].clientX - touchStartX) / arenaW * 100));
+  }, {passive:false});
+  arena.addEventListener('mousemove', e => {
+    const r = arena.getBoundingClientRect();
+    basketX = Math.max(2, Math.min(98, (e.clientX - r.left) / arenaW * 100));
+  });
+
+  animId = requestAnimationFrame(loop);
+  return { destroy: () => { cancelAnimationFrame(animId); document.removeEventListener('keydown', onKey); } };
+}
+
+// ═══════════════════════════════════════════
+// GAME: QUICK DRAW
+// ═══════════════════════════════════════════
+function gameQuickDraw(container, onEnd) {
+  showGameScreen('⚡ Quick Draw', false, false);
+  let round = 0, results = [], phase = 'idle', waitTO, startTime;
+  const ROUNDS = 5;
+
+  container.innerHTML = `
+    <p class="game-instructions">Wait for green, click as fast as possible!</p>
+    <div id="quickdraw-arena">Click to Start</div>
+    <p id="qd-rounds" style="color:var(--muted);font-size:.9rem;margin-top:12px">Round 0 / ${ROUNDS}</p>
+    <div id="qd-results" style="max-width:300px;width:100%;margin-top:16px"></div>
+  `;
+
+  const arena = document.getElementById('quickdraw-arena');
+
+  function startRound() {
+    round++;
+    document.getElementById('qd-rounds').textContent = `Round ${round} / ${ROUNDS}`;
+    arena.style.background = '#7f1d1d';
+    arena.style.borderColor = '#dc2626';
+    arena.innerHTML = `<div>WAIT...</div><div style="font-size:.75rem;margin-top:8px;opacity:.6">Don't click yet!</div>`;
+    phase = 'wait';
+    waitTO = setTimeout(() => {
+      arena.style.background = '#14532d';
+      arena.style.borderColor = '#16a34a';
+      arena.innerHTML = '<div>CLICK NOW!</div>';
+      startTime = performance.now();
+      phase = 'go';
+    }, 1500 + Math.random() * 3000);
+  }
+
+  const handleClick = () => {
+    if (!gameActive) return;
+    if (round === 0) { startRound(); return; }
+    if (phase === 'wait') {
+      clearTimeout(waitTO);
+      arena.style.background = '#1a1a1a';
+      arena.innerHTML = `<div style="color:var(--red)">Too early! 😬</div><div style="font-size:.75rem;margin-top:8px;opacity:.6">Click to retry</div>`;
+      phase = 'idle';
+      round--;
+      setTimeout(startRound, 1200);
+      return;
+    }
+    if (phase === 'go') {
+      const t = Math.round(performance.now() - startTime);
+      results.push(t);
+      phase = 'idle';
+      arena.style.background = '#1a1a2a';
+      arena.style.borderColor = 'var(--border)';
+      arena.innerHTML = `<div style="color:var(--neon-cyan)">${t}ms</div><div style="font-size:.75rem;margin-top:8px;opacity:.6">${results.length < ROUNDS ? 'Click for next' : 'Done!'}</div>`;
+      playHit();
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:.85rem;';
+      row.innerHTML = `<span>Round ${round}</span><span style="color:var(--neon-cyan)">${t}ms</span>`;
+      document.getElementById('qd-results').appendChild(row);
+      if (results.length >= ROUNDS) {
+        const avg = Math.round(results.reduce((a,b)=>a+b,0)/results.length);
+        saveHS('quickdraw', 9999 - avg);
+        setTimeout(() => onEnd(0, avg + 'ms avg'), 800);
+      } else {
+        setTimeout(startRound, 900);
+      }
+    }
+  };
+
+  arena.addEventListener('click', handleClick);
+  arena.addEventListener('touchstart', e => { e.preventDefault(); handleClick(); }, {passive:false});
+  return { destroy: () => clearTimeout(waitTO) };
+}
+
+// ═══════════════════════════════════════════
+// GAME: SLIDING PUZZLE
+// ═══════════════════════════════════════════
+function gameSlidingPuzzle(container, onEnd) {
+  showGameScreen('🧩 Sliding Puzzle', true, false);
+  const N = 3;
+  const SIZE = Math.min(280, window.innerWidth - 60);
+  const T = Math.floor(SIZE / N);
+  let tiles = [], moves = 0;
+
+  container.innerHTML = `
+    <p class="game-instructions">Arrange tiles 1–8 in order. Fewest moves wins!</p>
+    <div id="sliding-grid" style="grid-template-columns:repeat(${N},${T}px)"></div>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:12px">Moves: <span id="slide-moves">0</span></p>
+  `;
+
+  const grid = document.getElementById('sliding-grid');
+
+  function render() {
+    grid.innerHTML = '';
+    tiles.forEach((v, i) => {
+      const t = document.createElement('div');
+      t.className = 'slide-tile' + (v === 0 ? ' empty' : '');
+      t.style.width = T+'px'; t.style.height = T+'px';
+      t.style.fontSize = T*0.38+'px';
+      t.textContent = v === 0 ? '' : v;
+      t.dataset.i = i;
+      if (v !== 0) {
+        t.addEventListener('click', () => tryMove(i));
+        t.addEventListener('touchstart', e => { e.preventDefault(); tryMove(i); }, {passive:false});
+      }
+      grid.appendChild(t);
+    });
+  }
+
+  function tryMove(idx) {
+    const empty = tiles.indexOf(0);
+    const r = Math.floor(idx/N), c = idx%N, er = Math.floor(empty/N), ec = empty%N;
+    if (Math.abs(r-er)+Math.abs(c-ec) !== 1) return;
+    tiles[empty] = tiles[idx]; tiles[idx] = 0;
+    moves++;
+    document.getElementById('slide-moves').textContent = moves;
+    setScore(Math.max(0, 200 - moves));
+    playClick();
+    render();
+    if (tiles.slice(0,-1).every((v,i)=>v===i+1)) {
+      gameActive = false;
+      playSuccess();
+      setTimeout(() => onEnd(score, moves+' moves'), 400);
+    }
+  }
+
+  function shuffle() {
+    let arr = [...Array(N*N).keys()]; let e = 0;
+    for (let i=0; i<500; i++) {
+      const nb = []; const r=Math.floor(e/N),c=e%N;
+      if (r>0) nb.push(e-N); if (r<N-1) nb.push(e+N);
+      if (c>0) nb.push(e-1); if (c<N-1) nb.push(e+1);
+      const sw = nb[Math.floor(Math.random()*nb.length)];
+      [arr[e],arr[sw]]=[arr[sw],arr[e]]; e=sw;
+    }
+    return arr;
+  }
+
+  tiles = shuffle();
+  render();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: STROOP
+// ═══════════════════════════════════════════
+function gameStroop(container, onEnd) {
+  showGameScreen('🎨 Color Match', true, false);
+  const COLORS = [
+    {name:'Red',hex:'#ef4444'},{name:'Blue',hex:'#3b82f6'},{name:'Green',hex:'#22c55e'},
+    {name:'Yellow',hex:'#eab308'},{name:'Purple',hex:'#a855f7'},{name:'Orange',hex:'#f97316'},
+  ];
+  let round = 0, correct = 0, total = 20, wordColor;
+  const startTime = Date.now();
+
+  container.innerHTML = `
+    <p class="game-instructions">Click the COLOR the word is written in — not what it says!</p>
+    <div id="stroop-word"></div>
+    <div class="stroop-buttons" id="stroop-btns"></div>
+    <div class="stroop-feedback" id="stroop-fb"></div>
+    <p style="color:var(--muted);font-size:.8rem;margin-top:12px">Round <span id="s-round">0</span> / ${total}</p>
+  `;
+
+  const wordEl = document.getElementById('stroop-word');
+  const btnsEl = document.getElementById('stroop-btns');
+  const fb = document.getElementById('stroop-fb');
+
+  function next() {
+    if (round >= total) {
+      const secs = ((Date.now()-startTime)/1000).toFixed(1);
+      onEnd(correct, `${correct}/${total} in ${secs}s`);
+      return;
+    }
+    round++;
+    document.getElementById('s-round').textContent = round;
+    const wIdx = Math.floor(Math.random()*COLORS.length);
+    const cIdx = Math.floor(Math.random()*COLORS.length);
+    wordColor = COLORS[cIdx];
+    wordEl.textContent = COLORS[wIdx].name;
+    wordEl.style.color = wordColor.hex;
+    btnsEl.innerHTML = '';
+    const opts = [...COLORS].sort(()=>Math.random()-.5).slice(0,4);
+    if (!opts.find(c=>c.name===wordColor.name)) opts[0] = wordColor;
+    opts.sort(()=>Math.random()-.5).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'stroop-btn';
+      btn.style.background = c.hex;
+      btn.textContent = c.name;
+      btn.addEventListener('click', () => {
+        if (c.name === wordColor.name) { correct++; addScore(10); fb.textContent = '✓ Correct!'; fb.style.color='var(--green)'; playHit(); }
+        else { fb.textContent = '✗ Wrong!'; fb.style.color='var(--red)'; playMiss(); }
+        setTimeout(next, 600);
+      });
+      btnsEl.appendChild(btn);
+    });
+    fb.textContent = '';
+  }
+
+  next();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: PATTERN LOCK
+// ═══════════════════════════════════════════
+function gamePattern(container, onEnd) {
+  showGameScreen('🔐 Pattern Lock', true, false);
+  let pattern = [], input2 = [], level = 1, phase = 'show';
+
+  container.innerHTML = `
+    <p class="game-instructions">Watch the lit dots, then tap them in the same order!</p>
+    <p id="pat-status" style="color:var(--muted);font-size:.9rem;margin-bottom:8px">Level 1 — Watch...</p>
+    <div id="pattern-grid"></div>
+  `;
+
+  const grid = document.getElementById('pattern-grid');
+  const dots = [];
+  for (let i=0; i<9; i++) {
+    const d = document.createElement('div');
+    d.className = 'pattern-dot';
+    d.textContent = i+1;
+    d.dataset.i = i;
+    d.addEventListener('click', () => tap(i));
+    d.addEventListener('touchstart', e => { e.preventDefault(); tap(i); }, {passive:false});
+    grid.appendChild(d);
+    dots.push(d);
+  }
+
+  function showPattern() {
+    phase = 'show';
+    document.getElementById('pat-status').textContent = `Level ${level} — Watch...`;
+    dots.forEach(d => d.classList.remove('lit','correct','wrong'));
+    let i = 0;
+    const step = () => {
+      if (i > 0) dots[pattern[i-1]].classList.remove('lit');
+      if (i >= pattern.length) { setTimeout(()=>{ phase='input'; input2=[]; document.getElementById('pat-status').textContent=`Level ${level} — Your turn!`; },400); return; }
+      dots[pattern[i]].classList.add('lit'); playBeep(); i++;
+      setTimeout(step, Math.max(380, 700 - level*20));
+    };
+    setTimeout(step, 600);
+  }
+
+  function tap(idx) {
+    if (phase !== 'input') return;
+    const exp = pattern[input2.length];
+    if (idx === exp) {
+      dots[idx].classList.add('correct'); setTimeout(()=>dots[idx].classList.remove('correct'),300);
+      input2.push(idx); playHit();
+      if (input2.length === pattern.length) {
+        addScore(level*10); level++;
+        pattern.push(Math.floor(Math.random()*9));
+        setTimeout(showPattern, 800);
+      }
+    } else {
+      dots[idx].classList.add('wrong'); playMiss();
+      setTimeout(()=>{ dots[idx].classList.remove('wrong'); onEnd(score,`Level ${level-1}`); },600);
+    }
+  }
+
+  pattern = [Math.floor(Math.random()*9), Math.floor(Math.random()*9)];
+  while (pattern[1] === pattern[0]) pattern[1] = Math.floor(Math.random()*9);
+  showPattern();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: CARD FLIP / MEMORY
+// ═══════════════════════════════════════════
+function gameMemory(container, onEnd) {
+  showGameScreen('🃏 Card Flip', true, true);
+  const EMOJIS = ['🐶','🐱','🐸','🦊','🐻','🦁','🐯','🐼'];
+  const PAIRS = 8;
+  let flipped = [], matched = 0, movesCount = 0, canFlip = true;
+  const cards = [...EMOJIS, ...EMOJIS].sort(()=>Math.random()-.5);
+
+  container.innerHTML = `
+    <p class="game-instructions">Find all matching pairs!</p>
+    <p style="color:var(--muted);font-size:.8rem;margin-bottom:8px">Moves: <span id="mem-moves">0</span></p>
+    <div id="cards-grid" style="grid-template-columns:repeat(4,1fr);max-width:360px"></div>
+  `;
+
+  const grid = document.getElementById('cards-grid');
+  cards.forEach((emoji, i) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.emoji = emoji; card.dataset.i = i;
+    card.innerHTML = `<div class="memory-card-inner"><div class="card-back"></div><div class="card-front">${emoji}</div></div>`;
+    const flip = () => {
+      if (!gameActive || !canFlip) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      if (flipped.length >= 2) return;
+      card.classList.add('flipped'); flipped.push(card); playClick();
+      if (flipped.length === 2) {
+        movesCount++; document.getElementById('mem-moves').textContent = movesCount;
+        setScore(Math.max(0, 300 - movesCount*5));
+        canFlip = false;
+        setTimeout(() => {
+          const [a,b] = flipped;
+          if (a.dataset.emoji === b.dataset.emoji) {
+            a.classList.add('matched'); b.classList.add('matched');
+            a.classList.remove('flipped'); b.classList.remove('flipped');
+            matched++; playHit();
+            if (matched === PAIRS) { clearInterval(timerInterval); onEnd(score, movesCount+' moves'); }
+          } else { a.classList.remove('flipped'); b.classList.remove('flipped'); playMiss(); }
+          flipped = []; canFlip = true;
+        }, 800);
+      }
+    };
+    card.addEventListener('click', flip);
+    card.addEventListener('touchstart', e => { e.preventDefault(); flip(); }, {passive:false});
+    grid.appendChild(card);
+  });
+
+  startCountdown(120, null, () => { if (gameActive) onEnd(score, movesCount+' moves'); });
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: SIMON SAYS
+// ═══════════════════════════════════════════
+function gameSimon(container, onEnd) {
+  showGameScreen('🔴 Simon Says', true, false);
+  let sequence = [], playerIdx = 0, playing = false, level = 0;
+  const COLS = ['red','blue','yellow','green'];
+  const TONES = {red:300,blue:500,yellow:700,green:900};
+
+  container.innerHTML = `
+    <p class="game-instructions">Watch the sequence then repeat it!</p>
+    <div class="simon-grid">
+      <div class="simon-btn" data-color="red"></div>
+      <div class="simon-btn" data-color="blue"></div>
+      <div class="simon-btn" data-color="yellow"></div>
+      <div class="simon-btn" data-color="green"></div>
+    </div>
+    <div id="simon-status" style="color:var(--muted);font-size:.9rem;margin-top:8px">Tap any button to start</div>
+  `;
+
+  const btns = {};
+  container.querySelectorAll('.simon-btn').forEach(b => {
+    btns[b.dataset.color] = b;
+    b.addEventListener('click', () => playerPress(b.dataset.color));
+    b.addEventListener('touchstart', e => { e.preventDefault(); playerPress(b.dataset.color); }, {passive:false});
+  });
+
+  function flash(color, cb) {
+    btns[color].classList.add('lit');
+    playTone(TONES[color], 0.25, 'sine', 0.25);
+    setTimeout(() => { btns[color].classList.remove('lit'); setTimeout(cb, 100); }, 350);
+  }
+
+  function playSeq() {
+    playing = true;
+    document.getElementById('simon-status').textContent = 'Watch...';
+    let i = 0;
+    const next = () => { if(i>=sequence.length){playing=false;playerIdx=0;document.getElementById('simon-status').textContent='Your turn!';return;} flash(sequence[i++],next); };
+    setTimeout(next, 500);
+  }
+
+  function addAndPlay() {
+    sequence.push(COLS[Math.floor(Math.random()*4)]);
+    level = sequence.length;
+    setScore(level-1);
+    setTimeout(playSeq, 600);
+  }
+
+  function playerPress(color) {
+    if (playing || !gameActive) return;
+    if (sequence.length === 0) { addAndPlay(); return; }
+    flash(color, ()=>{});
+    if (color === sequence[playerIdx]) {
+      playerIdx++;
+      if (playerIdx === sequence.length) { addScore(10); setTimeout(addAndPlay, 600); }
+    } else {
+      playMiss();
+      gameActive = false;
+      document.getElementById('simon-status').textContent = '✗ Wrong!';
+      setTimeout(() => onEnd(score, `Level ${level-1}`), 800);
+    }
+  }
+
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: NUMBER FLASH
+// ═══════════════════════════════════════════
+function gameNumFlash(container, onEnd) {
+  showGameScreen('🔢 Number Flash', true, false);
+  let level = 3, current = '', phase = 'idle';
+
+  container.innerHTML = `
+    <p class="game-instructions">Memorize the number then type it back!</p>
+    <div id="flash-number">Ready?</div>
+    <input id="flash-input" type="tel" placeholder="Type number here..." autocomplete="off" disabled>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+      <button class="start-btn" id="flash-start">Start</button>
+      <button class="start-btn" id="flash-submit" style="display:none;background:var(--accent);color:#fff">Submit</button>
+    </div>
+    <p style="color:var(--muted);font-size:.8rem;margin-top:12px">Level: <span id="fl-level">3</span> digits</p>
+  `;
+
+  const numEl = document.getElementById('flash-number');
+  const inp = document.getElementById('flash-input');
+  const startBtn = document.getElementById('flash-start');
+  const submitBtn = document.getElementById('flash-submit');
+
+  startBtn.addEventListener('click', nextRound);
+  submitBtn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e => { if (e.key==='Enter') submit(); });
+
+  function nextRound() {
+    startBtn.style.display = 'none';
+    submitBtn.style.display = 'none';
+    inp.disabled = true; inp.value = '';
+    phase = 'show'; current = '';
+    for (let i=0;i<level;i++) current += Math.floor(Math.random()*10);
+    document.getElementById('fl-level').textContent = level;
+    numEl.style.color = 'var(--neon-cyan)';
+    numEl.textContent = current;
+    playBeep();
+    setTimeout(() => {
+      numEl.textContent = '???';
+      numEl.style.color = 'var(--muted)';
+      phase = 'input';
+      inp.disabled = false;
+      submitBtn.style.display = 'block';
+      inp.focus();
+    }, Math.max(800, level * 400));
+  }
+
+  function submit() {
+    if (phase !== 'input') return;
+    if (inp.value.trim() === current) {
+      addScore(level*10); numEl.textContent = '✓'; numEl.style.color='var(--green)'; playHit(); level++;
+      submitBtn.style.display = 'none';
+      setTimeout(nextRound, 700);
+    } else {
+      numEl.textContent = current; numEl.style.color = 'var(--red)'; playMiss();
+      setTimeout(() => onEnd(score, `Got ${level} digits`), 1000);
+    }
+  }
+
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: WORD SCRAMBLE
+// ═══════════════════════════════════════════
+function gameScramble(container, onEnd) {
+  showGameScreen('🔤 Word Scramble', true, true);
+  let correct = 0, pool = [...WORDS].sort(()=>Math.random()-.5);
+  let current = '';
+
+  container.innerHTML = `
+    <p class="game-instructions">Unscramble as many words as you can in 60 seconds!</p>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="scr-prog" style="width:100%"></div></div>
+    <div id="scramble-word"></div>
+    <input id="scramble-input" type="text" placeholder="TYPE ANSWER..." autocomplete="off" spellcheck="false">
+    <div class="scramble-feedback" id="scr-fb"></div>
+    <button id="skip-btn" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 20px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:.85rem;">Skip →</button>
+  `;
+
+  const inp = document.getElementById('scramble-input');
+  const fb = document.getElementById('scr-fb');
+
+  function scramble(w) {
+    const a = w.toUpperCase().split('');
+    let s; do { s = a.sort(()=>Math.random()-.5).join(''); } while (s === w.toUpperCase() && w.length > 2);
+    return s;
+  }
+
+  function nextWord() {
+    if (!pool.length) pool = [...WORDS].sort(()=>Math.random()-.5);
+    current = pool.pop();
+    document.getElementById('scramble-word').textContent = scramble(current);
+    inp.value = ''; fb.textContent = ''; inp.focus();
+  }
+
+  function check() {
+    if (inp.value.toUpperCase() === current.toUpperCase()) {
+      correct++; addScore(10 + current.length);
+      fb.textContent = '✓ Correct!'; fb.style.color='var(--green)'; playHit();
+      setTimeout(nextWord, 400);
+    }
+  }
+
+  inp.addEventListener('input', check);
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') check(); });
+  document.getElementById('skip-btn').addEventListener('click', () => {
+    fb.textContent = current; fb.style.color='var(--muted)'; setTimeout(nextWord, 500);
+  });
+
+  startCountdown(60, t => {
+    document.getElementById('scr-prog').style.width = (t/60*100)+'%';
+    if (t <= 15) document.getElementById('scr-prog').style.background = 'var(--red)';
+  }, () => onEnd(score, correct+' words'));
+
+  nextWord();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: TYPING SPEED
+// ═══════════════════════════════════════════
+function gameTyping(container, onEnd) {
+  showGameScreen('⌨️ Typing Speed', false, true);
+  const sentence = TYPING_SENTENCES[Math.floor(Math.random()*TYPING_SENTENCES.length)];
+  let started = false, startTime, errors = 0;
+
+  container.innerHTML = `
+    <p class="game-instructions">Type the sentence as fast and accurately as you can!</p>
+    <div id="typing-text"></div>
+    <input id="typing-input" type="text" placeholder="Start typing to begin..." autocomplete="off" spellcheck="false">
+    <div style="color:var(--muted);font-size:.85rem;margin-top:12px;display:flex;gap:20px;justify-content:center">
+      <span>WPM: <span id="t-wpm">0</span></span>
+      <span>Accuracy: <span id="t-acc">100</span>%</span>
+    </div>
+  `;
+
+  const textEl = document.getElementById('typing-text');
+  const inp = document.getElementById('typing-input');
+
+  function render() {
+    const val = inp.value;
+    textEl.innerHTML = sentence.split('').map((c,i) => {
+      let cls = 'typing-char';
+      if (i < val.length) cls += val[i]===c ? ' correct' : ' wrong';
+      if (i === val.length) cls += ' cursor';
+      return `<span class="${cls}">${c}</span>`;
+    }).join('');
+  }
+  render();
+  inp.focus();
+
+  inp.addEventListener('input', () => {
+    if (!started) { started = true; startTime = Date.now(); startCountdown(60, null, finish); }
+    const val = inp.value;
+    let e = 0; for (let i=0;i<val.length;i++) if(val[i]!==sentence[i]) e++;
+    errors = e; render();
+    const elapsed = Math.max(0.001,(Date.now()-startTime)/60000);
+    const wpm = Math.round((val.length/5)/elapsed);
+    const acc = Math.max(0, Math.round(100-(e/Math.max(val.length,1))*100));
+    document.getElementById('t-wpm').textContent = wpm;
+    document.getElementById('t-acc').textContent = acc;
+    if (val === sentence) finish();
+  });
+
+  function finish() {
+    clearInterval(timerInterval);
+    const elapsed = Math.max(0.001,(Date.now()-startTime)/60000);
+    const wpm = Math.round((sentence.length/5)/elapsed);
+    const acc = Math.max(0,Math.round(100-(errors/sentence.length)*100));
+    onEnd(wpm, wpm+' WPM, '+acc+'% acc');
+  }
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: HANGMAN
+// ═══════════════════════════════════════════
+function gameHangman(container, onEnd) {
+  showGameScreen('💀 Hangman', true, false);
+  const word = WORDS[Math.floor(Math.random()*WORDS.length)].toUpperCase();
+  let guessed = new Set(), wrong = 0;
+  const MAX = 6;
+  const FIGS = ['😐','😰','😨','😱','😭','💀'];
+
+  container.innerHTML = `
+    <div id="hm-figure" style="font-size:3.5rem;text-align:center;margin:10px 0">${FIGS[0]}</div>
+    <p style="color:var(--muted);font-size:.85rem">Wrong: <span id="hm-wrong">0</span> / ${MAX}</p>
+    <div class="hangman-word" id="hm-word"></div>
+    <div id="hm-wrong-lets" style="color:var(--red);font-size:.85rem;min-height:20px;margin:8px 0;letter-spacing:.1em"></div>
+    <div class="hangman-keyboard" id="hm-kb"></div>
+  `;
+
+  function render() {
+    document.getElementById('hm-figure').textContent = wrong===0?'🙂':FIGS[Math.min(wrong-1,5)];
+    document.getElementById('hm-wrong').textContent = wrong;
+    document.getElementById('hm-word').innerHTML = word.split('').map(c=>`<div class="hangman-letter">${guessed.has(c)?c:''}</div>`).join('');
+    document.getElementById('hm-wrong-lets').textContent = [...guessed].filter(c=>!word.includes(c)).join('  ');
+    document.querySelectorAll('.hm-key').forEach(k => {
+      if (guessed.has(k.textContent)) { k.disabled=true; k.classList.add(word.includes(k.textContent)?'correct-key':'wrong-key'); }
+    });
+  }
+
+  const kb = document.getElementById('hm-kb');
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'hm-key'; btn.textContent = c;
+    btn.addEventListener('click', () => guess(c));
+    kb.appendChild(btn);
+  });
+
+  const keyHandler = e => { if (!gameActive) return; const c = e.key.toUpperCase(); if (/^[A-Z]$/.test(c)) guess(c); };
+  document.addEventListener('keydown', keyHandler);
+
+  function guess(c) {
+    if (!gameActive || guessed.has(c)) return;
+    guessed.add(c);
+    if (!word.includes(c)) wrong++;
+    playClick(); render();
+    if (word.split('').every(ch=>guessed.has(ch))) {
+      setScore(Math.max(10,100-wrong*10)); gameActive = false; playSuccess();
+      document.removeEventListener('keydown', keyHandler);
+      setTimeout(() => onEnd(score, 'Solved: '+word), 600);
+    } else if (wrong >= MAX) {
+      document.getElementById('hm-figure').textContent = '💀';
+      document.getElementById('hm-word').innerHTML = word.split('').map(c=>`<div class="hangman-letter" style="color:${guessed.has(c)?'var(--green)':'var(--red)'}">${c}</div>`).join('');
+      playMiss(); gameActive = false;
+      document.removeEventListener('keydown', keyHandler);
+      setTimeout(() => onEnd(0, 'Word: '+word), 800);
+    }
+  }
+  render();
+  return { destroy: () => document.removeEventListener('keydown', keyHandler) };
+}
+
+// ═══════════════════════════════════════════
+// GAME: REACTION TIME
+// ═══════════════════════════════════════════
+function gameReaction(container, onEnd) {
+  showGameScreen('⚡ Reaction Time', false, false);
+  let results = [], round = 0, phase = 'idle', waitTO, startTime;
+
+  container.innerHTML = `
+    <p class="game-instructions">Click when the screen turns green. Average of 5 tries.</p>
+    <div id="reaction-arena" style="background:#1a1a1a;border:2px solid var(--border)">
+      <div>Click to Start</div>
+    </div>
+    <div id="react-results" style="max-width:300px;width:100%;margin-top:12px"></div>
+  `;
+
+  const arena = document.getElementById('reaction-arena');
+
+  function startRound() {
+    round++;
+    arena.style.background='#7f1d1d'; arena.style.borderColor='#dc2626';
+    arena.innerHTML=`<div>WAIT...</div><div class="reaction-sub">Round ${round} / 5</div>`;
+    phase='wait';
+    waitTO = setTimeout(()=>{
+      arena.style.background='#14532d'; arena.style.borderColor='#16a34a';
+      arena.innerHTML='<div>CLICK!</div>';
+      startTime=performance.now(); phase='go';
+    }, 1500+Math.random()*3000);
+  }
+
+  const handleClick = () => {
+    if (!gameActive) return;
+    if (round===0){startRound();return;}
+    if (phase==='wait'){
+      clearTimeout(waitTO);
+      arena.style.background='#1a1a1a';
+      arena.innerHTML=`<div style="color:var(--red)">Too early! 😬</div><div class="reaction-sub">Click to retry</div>`;
+      phase='idle'; round--;
+      setTimeout(startRound,1200); return;
+    }
+    if (phase==='go'){
+      const t = Math.round(performance.now()-startTime);
+      results.push(t); phase='idle';
+      arena.style.background='#1a1a2a'; arena.style.borderColor='var(--border)';
+      arena.innerHTML=`<div style="color:var(--neon-cyan)">${t}ms</div><div class="reaction-sub">${results.length<5?'Click for next':'Done!'}</div>`;
+      playHit();
+      const row = document.createElement('div');
+      row.style.cssText='display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:.85rem;';
+      row.innerHTML=`<span>Round ${round}</span><span style="color:var(--neon-cyan)">${t}ms</span>`;
+      document.getElementById('react-results').appendChild(row);
+      if (results.length>=5){
+        const avg=Math.round(results.reduce((a,b)=>a+b,0)/results.length);
+        saveHS('reaction',9999-avg);
+        setTimeout(()=>onEnd(0,avg+'ms average'),800);
+      } else { setTimeout(startRound,900); }
+    }
+  };
+
+  arena.addEventListener('click',handleClick);
+  arena.addEventListener('touchstart',e=>{e.preventDefault();handleClick();},{passive:false});
+  return { destroy:()=>clearTimeout(waitTO) };
+}
+
+// ═══════════════════════════════════════════
+// GAME: AIM TRAINER
+// ═══════════════════════════════════════════
+function gameAim(container, onEnd) {
+  showGameScreen('🎯 Aim Trainer', true, false);
+  let hits = 0, total = 0, times = [], lastTime = Date.now();
+  const TARGET_COUNT = 30;
+  const COLORS = ['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#f97316'];
+  let currentTarget = null;
+
+  container.innerHTML = `
+    <p class="game-instructions">Click targets as fast as possible! 30 targets.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">Targets: <span id="aim-count">0</span> / ${TARGET_COUNT}</p>
+    <div id="aim-arena"></div>
+  `;
+
+  const arena = document.getElementById('aim-arena');
+
+  function spawnTarget() {
+    if (!gameActive) return;
+    if (currentTarget && arena.contains(currentTarget)) arena.removeChild(currentTarget);
+    const size = [44,56,68][Math.floor(Math.random()*3)];
+    const x = Math.random()*(arena.offsetWidth-size);
+    const y = Math.random()*(arena.offsetHeight-size);
+    const color = COLORS[Math.floor(Math.random()*COLORS.length)];
+    const t = document.createElement('div');
+    t.className = 'aim-target';
+    t.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;background:${color};border:3px solid rgba(255,255,255,.25);font-size:${size*.5}px;`;
+    t.textContent = '🎯';
+    const hit = () => {
+      if (!gameActive) return;
+      const elapsed = Date.now()-lastTime;
+      times.push(elapsed); hits++; total++;
+      document.getElementById('aim-count').textContent = total;
+      addScore(Math.max(1,Math.round(500/elapsed*10)));
+      playHit(); lastTime = Date.now();
+      if (total >= TARGET_COUNT) {
+        gameActive = false;
+        const avg = Math.round(times.reduce((a,b)=>a+b,0)/times.length);
+        onEnd(score,`${hits}/${TARGET_COUNT} avg ${avg}ms`);
+      } else { spawnTarget(); }
+    };
+    t.addEventListener('click', hit);
+    t.addEventListener('touchstart', e=>{e.preventDefault();hit();},{passive:false});
+    arena.appendChild(t);
+    currentTarget = t;
+    lastTime = Date.now();
+  }
+
+  spawnTarget();
+  return { destroy:()=>{ if(currentTarget&&arena.contains(currentTarget)) arena.removeChild(currentTarget); } };
+}
+
+// ═══════════════════════════════════════════
+// GAME: SPEED COUNT
+// ═══════════════════════════════════════════
+function gameSpeedCount(container, onEnd) {
+  showGameScreen('🔢 Speed Count', false, true);
+  let next = 1, startTime, started = false;
+  const TOTAL = 25;
+  const COLORS = ['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#f97316','#22d3ee','#f9a8d4'];
+
+  container.innerHTML = `
+    <p class="game-instructions">Click numbers 1 to 25 in order — as fast as you can!</p>
+    <div id="speedcount-arena"></div>
+    <p id="sc-status" style="color:var(--muted);font-size:.85rem;margin-top:8px">Next: <span id="sc-next" style="color:var(--neon-cyan)">1</span></p>
+    <button class="start-btn" id="sc-start">Start</button>
+  `;
+
+  const arena = document.getElementById('speedcount-arena');
+
+  function buildGrid() {
+    arena.innerHTML = '';
+    const nums = Array.from({length:TOTAL},(_,i)=>i+1).sort(()=>Math.random()-.5);
+    const aW = arena.offsetWidth-44, aH = arena.offsetHeight-44;
+    nums.forEach(n => {
+      const el = document.createElement('div');
+      el.className = 'count-num';
+      el.style.left = Math.random()*aW+'px';
+      el.style.top = Math.random()*aH+'px';
+      const color = COLORS[Math.floor(Math.random()*COLORS.length)];
+      el.style.cssText += `;color:${color};background:rgba(0,0,0,.4);border:2px solid ${color};`;
+      el.textContent = n; el.dataset.n = n;
+      el.addEventListener('click', () => handleNum(n, el));
+      el.addEventListener('touchstart', e=>{e.preventDefault();handleNum(n,el);},{passive:false});
+      arena.appendChild(el);
+    });
+  }
+
+  document.getElementById('sc-start').addEventListener('click', () => {
+    document.getElementById('sc-start').style.display='none';
+    buildGrid();
+    startCountdown(120, null, ()=>{ if(gameActive) onEnd(0,"Time's up!"); });
+    startTime = Date.now();
+  });
+
+  function handleNum(n, el) {
+    if (!gameActive) return;
+    if (n === next) {
+      el.classList.add('done'); playHit(); next++;
+      document.getElementById('sc-next').textContent = next <= TOTAL ? next : '—';
+      if (next > TOTAL) {
+        const elapsed = ((Date.now()-startTime)/1000).toFixed(2);
+        clearInterval(timerInterval); gameActive=false;
+        onEnd(Math.round(10000/parseFloat(elapsed)), elapsed+'s');
+      }
+    } else { el.classList.add('wrong'); playMiss(); setTimeout(()=>el.classList.remove('wrong'),300); }
+  }
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: PLANT PARENT
+// ═══════════════════════════════════════════
+function gamePlant(container, onEnd) {
+  showGameScreen('🌱 Plant Parent', true, false);
+  let water = 60, sun = 60, warmth = 60, day = 1;
+  const FACTS = [
+    "💧 Overwatering is the #1 killer of houseplants.",
+    "☀️ Most indoor plants prefer bright indirect light.",
+    "🌡️ Tropical plants thrive above 60°F (15°C).",
+    "🌿 Succulents need very little water — once a week or less.",
+    "🧤 Yellowing leaves often signal too much water.",
+    "🍃 Brown leaf tips usually mean low humidity.",
+    "🪴 Let soil dry slightly between waterings.",
+    "☀️ Too much direct sun can scorch leaves.",
+    "🌱 Fertilize in spring/summer, not winter.",
+    "💨 Good airflow prevents mold and pests.",
+    "🌍 Most houseplants dislike cold drafts near windows.",
+    "🌸 Repot every 1-2 years when roots outgrow the pot.",
+  ];
+
+  function getEmoji() {
+    const h = (water+sun+warmth)/3;
+    if (h < 15) return '🪴💀';
+    if (h < 30) return '🥀';
+    if (h < 50) return '🌾';
+    if (day < 5) return '🌱';
+    if (day < 15) return '🌿';
+    return '🪴';
+  }
+
+  container.innerHTML = `
+    <div id="plant-arena">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:700;font-size:.9rem">Day <span id="p-day">1</span></span>
+        <span style="color:var(--muted);font-size:.8rem">Keep it alive!</span>
+      </div>
+      <div class="plant-display" id="p-emoji">🌱</div>
+      <div class="plant-stats">
+        <div class="plant-stat"><div class="stat-label">💧 Water</div><div class="stat-bar"><div class="stat-fill" id="p-wbar" style="background:#3b82f6;width:60%"></div></div></div>
+        <div class="plant-stat"><div class="stat-label">☀️ Sun</div><div class="stat-bar"><div class="stat-fill" id="p-sbar" style="background:#eab308;width:60%"></div></div></div>
+        <div class="plant-stat"><div class="stat-label">🌡️ Warmth</div><div class="stat-bar"><div class="stat-fill" id="p-warmbar" style="background:#f97316;width:60%"></div></div></div>
+      </div>
+      <div class="plant-actions">
+        <button class="plant-btn" id="p-water" style="background:#1d4ed8;color:#fff">💧 Water</button>
+        <button class="plant-btn" id="p-sun" style="background:#854d0e;color:#fff">☀️ Sunlight</button>
+        <button class="plant-btn" id="p-warm" style="background:#9a3412;color:#fff">🌡️ Warmth</button>
+        <button class="plant-btn" id="p-next" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border)">⏭ Next Day</button>
+      </div>
+      <div class="plant-fact" id="p-fact"></div>
+    </div>
+  `;
+
+  function render() {
+    document.getElementById('p-day').textContent = day;
+    document.getElementById('p-emoji').textContent = getEmoji();
+    document.getElementById('p-wbar').style.width = Math.max(0,water)+'%';
+    document.getElementById('p-sbar').style.width = Math.max(0,sun)+'%';
+    document.getElementById('p-warmbar').style.width = Math.max(0,warmth)+'%';
+    document.getElementById('p-wbar').style.background = water<20?'#ef4444':'#3b82f6';
+    document.getElementById('p-sbar').style.background = sun<20?'#ef4444':'#eab308';
+    document.getElementById('p-warmbar').style.background = warmth<20?'#ef4444':'#f97316';
+    setScore(day);
+  }
+
+  function showFact() { document.getElementById('p-fact').textContent = FACTS[Math.floor(Math.random()*FACTS.length)]; }
+
+  function nextDay() {
+    day++;
+    water = Math.max(0, Math.min(100, water - 18 + (Math.random()*6-3)));
+    sun = Math.max(0, Math.min(100, sun - 15 + (Math.random()*6-3)));
+    warmth = Math.max(0, Math.min(100, warmth - 12 + (Math.random()*6-3)));
+    showFact(); render();
+    if ((water+sun+warmth)/3 < 10) { gameActive=false; onEnd(day,'Survived '+(day-1)+' days'); }
+  }
+
+  document.getElementById('p-water').addEventListener('click', () => { water=Math.min(100,water+25); if(water>95)water=60; playHit(); showFact(); render(); });
+  document.getElementById('p-sun').addEventListener('click', () => { sun=Math.min(100,sun+22); playHit(); showFact(); render(); });
+  document.getElementById('p-warm').addEventListener('click', () => { warmth=Math.min(100,warmth+20); playHit(); showFact(); render(); });
+  document.getElementById('p-next').addEventListener('click', () => { playBeep(); nextDay(); });
+
+  render(); showFact();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: ZEN GARDEN
+// ═══════════════════════════════════════════
+function gameZen(container, onEnd) {
+  showGameScreen('🪨 Zen Garden', false, false);
+  document.getElementById('score-display').style.display = 'none';
+  let tool = 'rake', drawing = false, lastX, lastY;
+
+  const arenaW = Math.min(520, window.innerWidth - 40);
+  const arenaH = Math.min(400, window.innerHeight - 300);
+
+  container.innerHTML = `
+    <p class="game-instructions">No score. No timer. Just peace. 🧘</p>
+    <div id="zen-arena" style="height:${arenaH}px">
+      <canvas id="zen-canvas" width="${arenaW}" height="${arenaH}"></canvas>
+      <div class="zen-tools">
+        <button class="zen-tool active" data-tool="rake">🪄 Rake</button>
+        <button class="zen-tool" data-tool="rock">🪨 Rock</button>
+        <button class="zen-tool" data-tool="plant">🌿 Plant</button>
+        <button class="zen-tool" data-tool="flower">🌸 Flower</button>
+        <button class="zen-tool" data-tool="clear">🗑 Clear</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById('zen-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function drawSand() {
+    ctx.fillStyle = '#c8a870';
+    ctx.fillRect(0,0,arenaW,arenaH);
+    for (let i=0;i<800;i++) {
+      ctx.fillStyle = `rgba(${180+Math.random()*40},${140+Math.random()*30},${80+Math.random()*20},.3)`;
+      ctx.fillRect(Math.random()*arenaW, Math.random()*arenaH, 2, 2);
+    }
+  }
+  drawSand();
+
+  function rake(x, y, px, py) {
+    if (px===undefined) return;
+    const dx=x-px, dy=y-py, len=Math.sqrt(dx*dx+dy*dy)||1;
+    ctx.strokeStyle='rgba(140,100,40,.55)'; ctx.lineWidth=1.5; ctx.lineCap='round';
+    for (let r=-1; r<=1; r++) {
+      ctx.beginPath();
+      ctx.moveTo(px - dy/len*8*r, py + dx/len*8*r);
+      ctx.lineTo(x - dy/len*8*r, y + dx/len*8*r);
+      ctx.stroke();
+    }
+  }
+
+  function place(x, y, emoji) {
+    ctx.font = `${28+Math.random()*12}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(emoji, x, y);
+  }
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const p = getPos(e); lastX=p.x; lastY=p.y; drawing=true;
+    if (tool!=='rake') { place(p.x,p.y,{rock:'🪨',plant:'🌿',flower:'🌸'}[tool]||''); drawing=false; }
+    playClick();
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing||tool!=='rake') return;
+    const p=getPos(e); rake(p.x,p.y,lastX,lastY); lastX=p.x; lastY=p.y;
+  });
+  canvas.addEventListener('mouseup', () => drawing=false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault(); const p=getPos(e); lastX=p.x; lastY=p.y; drawing=true;
+    if (tool!=='rake') { place(p.x,p.y,{rock:'🪨',plant:'🌿',flower:'🌸'}[tool]||''); drawing=false; }
+    playClick();
+  },{passive:false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault(); if (!drawing||tool!=='rake') return;
+    const p=getPos(e); rake(p.x,p.y,lastX,lastY); lastX=p.x; lastY=p.y;
+  },{passive:false});
+  canvas.addEventListener('touchend', () => drawing=false);
+
+  document.querySelectorAll('.zen-tool').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tool==='clear') { drawSand(); return; }
+      tool = btn.dataset.tool;
+      document.querySelectorAll('.zen-tool').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active'); playClick();
+    });
+  });
+
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// GAME: COLOR MIXER
+// ═══════════════════════════════════════════
+function gameMixer(container, onEnd) {
+  showGameScreen('🌈 Color Mixer', true, false);
+  let round = 0, totalScore = 0, target;
+  const ROUNDS = 5;
+
+  container.innerHTML = `
+    <p class="game-instructions">Match the target color using the RGB sliders!</p>
+    <div id="mixer-arena">
+      <div class="color-swatches">
+        <div><div class="color-swatch" id="mix-target"></div><div class="swatch-label">Target</div></div>
+        <div><div class="color-swatch" id="mix-yours"></div><div class="swatch-label">Yours</div></div>
+      </div>
+      <div class="mixer-sliders">
+        <div class="mixer-row"><label style="color:#ef4444">R</label><input type="range" id="mix-r" min="0" max="255" value="128"><span id="mix-rv">128</span></div>
+        <div class="mixer-row"><label style="color:#22c55e">G</label><input type="range" id="mix-g" min="0" max="255" value="128"><span id="mix-gv">128</span></div>
+        <div class="mixer-row"><label style="color:#3b82f6">B</label><input type="range" id="mix-b" min="0" max="255" value="128"><span id="mix-bv">128</span></div>
+      </div>
+      <p style="color:var(--muted);font-size:.8rem;text-align:center">Round <span id="mix-round">0</span> / ${ROUNDS}</p>
+      <div class="mixer-score-display" id="mix-score" style=""></div>
+      <button class="submit-mix-btn" id="mix-submit">Submit Mix</button>
+    </div>
+  `;
+
+  function update() {
+    const r=+document.getElementById('mix-r').value, g=+document.getElementById('mix-g').value, b=+document.getElementById('mix-b').value;
+    document.getElementById('mix-yours').style.background=`rgb(${r},${g},${b})`;
+    document.getElementById('mix-rv').textContent=r;
+    document.getElementById('mix-gv').textContent=g;
+    document.getElementById('mix-bv').textContent=b;
+  }
+
+  ['mix-r','mix-g','mix-b'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+
+  function nextRound() {
+    round++;
+    document.getElementById('mix-round').textContent=round;
+    document.getElementById('mix-score').style.display='none';
+    document.getElementById('mix-submit').style.display='block';
+    target={r:Math.floor(Math.random()*256),g:Math.floor(Math.random()*256),b:Math.floor(Math.random()*256)};
+    document.getElementById('mix-target').style.background=`rgb(${target.r},${target.g},${target.b})`;
+    document.getElementById('mix-r').value=128;
+    document.getElementById('mix-g').value=128;
+    document.getElementById('mix-b').value=128;
+    update();
+  }
+
+  document.getElementById('mix-submit').addEventListener('click', () => {
+    const r=+document.getElementById('mix-r').value, g=+document.getElementById('mix-g').value, b=+document.getElementById('mix-b').value;
+    const dist = Math.sqrt(Math.pow(r-target.r,2)+Math.pow(g-target.g,2)+Math.pow(b-target.b,2));
+    const acc = Math.round((1-dist/Math.sqrt(3*255*255))*100);
+    addScore(acc); totalScore+=acc;
+    document.getElementById('mix-submit').style.display='none';
+    document.getElementById('mix-score').style.display='block';
+    document.getElementById('mix-score').textContent=acc+'% match!';
+    document.getElementById('mix-score').style.color=acc>80?'var(--green)':acc>50?'var(--yellow)':'var(--red)';
+    if (acc>70) playSuccess(); else playMiss();
+    if (round>=ROUNDS) setTimeout(()=>onEnd(score,`Avg ${Math.round(totalScore/ROUNDS)}% accuracy`),1200);
+    else setTimeout(nextRound,1200);
+  });
+
+  nextRound();
+  return {};
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+buildGameList();
+</script>
+
+
+
+
+<script>
+// AUTO-LAUNCH: This is a standalone download of "Whack-a-Mole"
+(function() {
+  var _origInit = window.onload;
+  function autoStart() {
+    // Small delay to let everything initialize
+    setTimeout(function() {
+      launchGame('whack');
+      // Override "New Game" to relaunch this game
+      var newBtn = document.getElementById('go-new');
+      if (newBtn) {
+        newBtn.textContent = '🔄 Play Again';
+        newBtn.onclick = function() {
+          document.getElementById('game-over').style.display = 'none';
+          launchGame('whack');
+        };
+      }
+      // Hide the download button in standalone mode
+      var dlBtn = document.getElementById('go-download');
+      if (dlBtn) dlBtn.style.display = 'none';
+    }, 150);
+  }
+  if (document.readyState === 'complete') autoStart();
+  else window.addEventListener('load', autoStart);
+})();
+</script>
+</body>
+</html>

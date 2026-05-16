@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hugo's Games</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #0f0f1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #fff;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.sub {
+      color: #888;
+      margin-bottom: 3rem;
+      font-size: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+    }
+    a.card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-decoration: none;
+      color: #fff;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+    a.card:hover {
+      transform: translateY(-4px);
+      border-color: #a78bfa;
+      box-shadow: 0 8px 30px rgba(167, 139, 250, 0.2);
+    }
+    .icon { font-size: 3rem; }
+    .card-title { font-size: 1.15rem; font-weight: 700; }
+    .card-desc { font-size: 0.85rem; color: #888; }
+    footer { margin-top: 3rem; color: #555; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Hugo's Game Hub</h1>
+  <p class="sub">Games designed by Hugo</p>
+  <div class="grid">
+    <a class="card" href="whack-a-mole.html">
+      <div class="icon">🔨</div>
+      <div class="card-title">Whack-a-Mole</div>
+      <div class="card-desc">Classic mole-smashing action</div>
+    </a>
+    <a class="card" href="goodapples-3d-maze.html">
+      <div class="icon">🍎</div>
+      <div class="card-title">Good Apples 3D Maze</div>
+      <div class="card-desc">Navigate the maze in 3D</div>
+    </a>
+    <a class="card" href="goodapples-3d.html">
+      <div class="icon">🎮</div>
+      <div class="card-title">Good Apples 3D</div>
+      <div class="card-desc">3D apple adventure</div>
+    </a>
+    <a class="card" href="goodapples-remix.html">
+      <div class="icon">🔀</div>
+      <div class="card-title">Good Apples Remix</div>
+      <div class="card-desc">A fresh remix of the original</div>
+    </a>
+  </div>
+  <footer>Built with ChatGPT &amp; Claude</footer>
+</body>
+</html>
