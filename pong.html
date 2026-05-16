@@ -2,62 +2,109 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Pong - 2 Players</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:monospace; color:#fff; }
-  h2 { margin-bottom:12px; font-size:1.4rem; letter-spacing:2px; }
-  .controls { font-size:0.75rem; color:#555; margin-bottom:10px; display:flex; gap:2rem; }
-  canvas { border:2px solid #333; display:block; }
-  #msg { margin-top:14px; font-size:1.1rem; min-height:1.5em; color:#10a37f; }
-  a.back { margin-top:16px; color:#444; font-size:0.75rem; text-decoration:none; }
-  a.back:hover { color:#fff; }
+*{margin:0;padding:0;box-sizing:border-box;touch-action:none;-webkit-tap-highlight-color:transparent;}
+body{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:monospace;color:#fff;overflow:hidden;}
+h2{margin-bottom:8px;font-size:clamp(1rem,4vw,1.4rem);letter-spacing:2px;}
+.ctrl{font-size:clamp(.6rem,2.5vw,.75rem);color:#444;margin-bottom:8px;display:flex;gap:2rem;}
+canvas{border:2px solid #222;border-radius:4px;display:block;max-width:100vw;max-height:70vh;}
+#msg{margin-top:10px;font-size:clamp(.85rem,3vw,1.1rem);min-height:1.4em;color:#10a37f;}
+a.back{margin-top:12px;color:#444;font-size:.75rem;text-decoration:none;}
+a.back:hover{color:#fff;}
 </style>
 </head>
 <body>
 <h2>🏓 PONG</h2>
-<div class="controls">
-  <span>P1: W / S</span>
-  <span>P2: ↑ / ↓</span>
-  <span>SPACE to start</span>
+<div class="ctrl">
+  <span>P1: W/S or drag left</span>
+  <span>P2: ↑/↓ or drag right</span>
 </div>
-<canvas id="c" width="700" height="450"></canvas>
-<div id="msg">Press SPACE to start</div>
+<canvas id="c"></canvas>
+<div id="msg">Tap/Click to start</div>
 <a class="back" href="index.html">← Back to games</a>
 <script>
-const c=document.getElementById('c'),ctx=c.getContext('2d');
-const W=700,H=450,PS=90,PW=12,SPEED=5,BALL_START=4;
-let running=false,scores=[0,0];
-let p1={y:H/2-PS/2},p2={y:H/2-PS/2};
-let ball={x:W/2,y:H/2,vx:BALL_START,vy:3};
-let keys={};
-document.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' '&&!running){running=true;document.getElementById('msg').textContent='';} e.preventDefault();});
-document.addEventListener('keyup',e=>{keys[e.key]=false;});
-function reset(){ball={x:W/2,y:H/2,vx:(Math.random()>0.5?1:-1)*BALL_START,vy:(Math.random()-0.5)*6};running=false;document.getElementById('msg').textContent='Press SPACE to continue';}
-function draw(){
-  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-  ctx.setLineDash([8,12]);ctx.strokeStyle='#222';ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle='#fff';
-  ctx.fillRect(20,p1.y,PW,PS);
-  ctx.fillRect(W-20-PW,p2.y,PW,PS);
-  ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fill();
-  ctx.font='bold 36px monospace';ctx.textAlign='center';
-  ctx.fillText(scores[0],W/4,50);ctx.fillText(scores[1],3*W/4,50);
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const msg=document.getElementById('msg');
+function resize(){
+  const maxW=Math.min(700,window.innerWidth-8);
+  const maxH=Math.min(450,window.innerHeight*0.65);
+  const r=Math.min(maxW/700,maxH/450);
+  cv.width=Math.floor(700*r);cv.height=Math.floor(450*r);
 }
+resize();window.addEventListener('resize',resize);
+const W=()=>cv.width,H=()=>cv.height;
+const PS=()=>H()*0.2,PW=()=>Math.max(8,W()*0.017),BALL=()=>Math.max(5,W()*0.012),SPEED=()=>H()*0.011;
+
+let p1y,p2y,ball,scores,running;
+function init(){
+  p1y=H()/2-PS()/2;p2y=H()/2-PS()/2;
+  ball={x:W()/2,y:H()/2,vx:(Math.random()>.5?1:-1)*SPEED(),vy:(Math.random()-.5)*SPEED()*.8};
+  scores=[0,0];running=false;msg.textContent='Tap/Click to start';
+}
+init();
+
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(!running&&(e.key===' '||e.key==='Enter')){running=true;msg.textContent='';}e.preventDefault();});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+// Touch: track per-side drag
+let t1={id:-1,y:0},t2={id:-1,y:0};
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    const cx=t.clientX-cv.getBoundingClientRect().left;
+    if(cx<W()/2){t1={id:t.identifier,y:t.clientY};}
+    else{t2={id:t.identifier,y:t.clientY};}
+  }
+  if(!running){running=true;msg.textContent='';}
+},{passive:false});
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    if(t.identifier===t1.id){const dy=t.clientY-t1.y;p1y=Math.max(0,Math.min(H()-PS(),p1y+dy));t1.y=t.clientY;}
+    if(t.identifier===t2.id){const dy=t.clientY-t2.y;p2y=Math.max(0,Math.min(H()-PS(),p2y+dy));t2.y=t.clientY;}
+  }
+},{passive:false});
+cv.addEventListener('touchend',e=>{for(const t of e.changedTouches){if(t.identifier===t1.id)t1.id=-1;if(t.identifier===t2.id)t2.id=-1;}});
+cv.addEventListener('click',()=>{if(!running){running=true;msg.textContent='';}});
+
 function update(){
   if(!running)return;
-  if(keys['w']||keys['W'])p1.y=Math.max(0,p1.y-SPEED);
-  if(keys['s']||keys['S'])p1.y=Math.min(H-PS,p1.y+SPEED);
-  if(keys['ArrowUp'])p2.y=Math.max(0,p2.y-SPEED);
-  if(keys['ArrowDown'])p2.y=Math.min(H-PS,p2.y+SPEED);
+  const sp=SPEED(),pw=PW(),ps=PS(),bs=BALL();
+  if(keys['w']||keys['W'])p1y=Math.max(0,p1y-sp);
+  if(keys['s']||keys['S'])p1y=Math.min(H()-ps,p1y+sp);
+  if(keys['ArrowUp'])p2y=Math.max(0,p2y-sp);
+  if(keys['ArrowDown'])p2y=Math.min(H()-ps,p2y+sp);
   ball.x+=ball.vx;ball.y+=ball.vy;
-  if(ball.y<=8||ball.y>=H-8)ball.vy*=-1;
-  if(ball.x<=20+PW+8&&ball.y>=p1.y&&ball.y<=p1.y+PS){ball.vx=Math.abs(ball.vx)*1.05;ball.vy+=(ball.y-p1.y-PS/2)*0.1;}
-  if(ball.x>=W-20-PW-8&&ball.y>=p2.y&&ball.y<=p2.y+PS){ball.vx=-Math.abs(ball.vx)*1.05;ball.vy+=(ball.y-p2.y-PS/2)*0.1;}
-  if(ball.x<0){scores[1]++;document.getElementById('msg').textContent='P2 scores! 🎉';reset();}
-  if(ball.x>W){scores[0]++;document.getElementById('msg').textContent='P1 scores! 🎉';reset();}
+  if(ball.y<=bs||ball.y>=H()-bs)ball.vy*=-1;
+  const mx=20+pw+bs,my=W()-20-pw-bs;
+  if(ball.x<=mx&&ball.y>=p1y&&ball.y<=p1y+ps){ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-p1y-ps/2)*.08;}
+  if(ball.x>=my&&ball.y>=p2y&&ball.y<=p2y+ps){ball.vx=-Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-p2y-ps/2)*.08;}
+  ball.vx=Math.max(-sp*2.5,Math.min(sp*2.5,ball.vx));
+  ball.vy=Math.max(-sp*2,Math.min(sp*2,ball.vy));
+  if(ball.x<0){scores[1]++;msg.textContent='P2 scores! 🎉';running=false;setTimeout(()=>{ball={x:W()/2,y:H()/2,vx:-Math.abs(ball.vx)||sp,vy:(Math.random()-.5)*sp*.8};msg.textContent='Tap/Click to continue';},1000);}
+  if(ball.x>W()){scores[0]++;msg.textContent='P1 scores! 🎉';running=false;setTimeout(()=>{ball={x:W()/2,y:H()/2,vx:Math.abs(ball.vx)||sp,vy:(Math.random()-.5)*sp*.8};msg.textContent='Tap/Click to continue';},1000);}
 }
-function loop(){draw();update();requestAnimationFrame(loop);}
+function draw(){
+  const pw=PW(),ps=PS(),bs=BALL();
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W(),H());
+  ctx.setLineDash([8,10]);ctx.strokeStyle='#1a1a1a';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(W()/2,0);ctx.lineTo(W()/2,H());ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#fff';
+  ctx.fillRect(20,p1y,pw,ps);
+  ctx.fillRect(W()-20-pw,p2y,pw,ps);
+  ctx.beginPath();ctx.arc(ball.x,ball.y,bs,0,Math.PI*2);ctx.fill();
+  ctx.font=`bold ${Math.floor(W()*.05)}px monospace`;ctx.textAlign='center';
+  ctx.fillText(scores[0],W()/4,W()*.06);ctx.fillText(scores[1],3*W()/4,W()*.06);
+  // Touch hint lines
+  if('ontouchstart' in window){
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(W()/2,0);ctx.lineTo(W()/2,H());ctx.stroke();
+  }
+}
+function loop(){update();draw();requestAnimationFrame(loop);}
 loop();
 </script>
 </body>
