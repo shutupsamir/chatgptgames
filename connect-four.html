@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Connect Four - 2 Players</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0d0d1a; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:'Segoe UI',sans-serif; color:#fff; padding:1rem; }
+  h2 { font-size:1.8rem; margin-bottom:6px; }
+  #turn { font-size:1rem; margin-bottom:14px; min-height:1.5em; }
+  #board { background:#1a3a8f; border-radius:12px; padding:12px; display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+  .cell { width:58px; height:58px; border-radius:50%; background:#0d0d1a; cursor:pointer; transition:background 0.15s; }
+  .cell.p1 { background:#ef4444; }
+  .cell.p2 { background:#facc15; }
+  .cell:hover { opacity:0.8; }
+  #msg { margin-top:16px; font-size:1.3rem; font-weight:700; min-height:1.8em; color:#10a37f; }
+  button { margin-top:12px; padding:0.5rem 1.5rem; border-radius:999px; border:none; background:#10a37f; color:#fff; font-size:0.9rem; cursor:pointer; font-weight:600; }
+  a.back { margin-top:12px; color:#444; font-size:0.75rem; text-decoration:none; }
+  a.back:hover { color:#fff; }
+  .legend { display:flex; gap:1.5rem; margin-bottom:10px; font-size:0.85rem; align-items:center; }
+  .dot { width:16px; height:16px; border-radius:50%; display:inline-block; margin-right:5px; }
+</style>
+</head>
+<body>
+<h2>Connect Four</h2>
+<div class="legend">
+  <span><span class="dot" style="background:#ef4444"></span>Player 1 (Red)</span>
+  <span><span class="dot" style="background:#facc15"></span>Player 2 (Yellow)</span>
+</div>
+<div id="turn">Player 1's turn</div>
+<div id="board"></div>
+<div id="msg"></div>
+<button onclick="restart()">Restart</button>
+<a class="back" href="index.html">← Back to games</a>
+<script>
+const ROWS=6,COLS=7;
+let board=Array.from({length:ROWS},()=>Array(COLS).fill(0));
+let current=1,over=false;
+const boardEl=document.getElementById('board');
+const turnEl=document.getElementById('turn');
+const msgEl=document.getElementById('msg');
+
+function render(){
+  boardEl.innerHTML='';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=document.createElement('div');
+      cell.className='cell'+(board[r][c]===1?' p1':board[r][c]===2?' p2':'');
+      cell.dataset.col=c;
+      cell.addEventListener('click',()=>drop(c));
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function drop(col){
+  if(over)return;
+  for(let r=ROWS-1;r>=0;r--){
+    if(board[r][col]===0){
+      board[r][col]=current;
+      render();
+      if(checkWin(r,col)){
+        msgEl.textContent=`Player ${current} wins! 🎉`;
+        turnEl.textContent='';
+        over=true;return;
+      }
+      if(board[0].every(c=>c!==0)){msgEl.textContent="It's a draw!";over=true;return;}
+      current=current===1?2:1;
+      turnEl.textContent=`Player ${current}'s turn`;
+      turnEl.style.color=current===1?'#ef4444':'#facc15';
+      return;
+    }
+  }
+}
+
+function checkWin(r,c){
+  const p=board[r][c];
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(const[dr,dc] of dirs){
+    let count=1;
+    for(let i=1;i<4;i++){const nr=r+dr*i,nc=c+dc*i;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&board[nr][nc]===p)count++;else break;}
+    for(let i=1;i<4;i++){const nr=r-dr*i,nc=c-dc*i;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&board[nr][nc]===p)count++;else break;}
+    if(count>=4)return true;
+  }
+  return false;
+}
+
+function restart(){board=Array.from({length:ROWS},()=>Array(COLS).fill(0));current=1;over=false;msgEl.textContent='';turnEl.textContent="Player 1's turn";turnEl.style.color='';render();}
+render();
+</script>
+</body>
+</html>
